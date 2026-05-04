@@ -18,13 +18,26 @@ class GainzApp {
     }
 
     setupEventListeners() {
-        // Forms
-        document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
-        document.getElementById('registerForm').addEventListener('submit', (e) => this.handleRegister(e));
-        document.getElementById('workoutForm').addEventListener('submit', (e) => this.handleCreateWorkout(e));
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const workoutForm = document.getElementById('workoutForm');
+        const workoutDate = document.getElementById('workoutDate');
 
-        // Initialize workout date to today
-        document.getElementById('workoutDate').valueAsDate = new Date();
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+        }
+
+        if (registerForm) {
+            registerForm.addEventListener('submit', (e) => this.handleRegister(e));
+        }
+
+        if (workoutForm) {
+            workoutForm.addEventListener('submit', (e) => this.handleCreateWorkout(e));
+        }
+
+        if (workoutDate) {
+            workoutDate.valueAsDate = new Date();
+        }
     }
 
     checkAuthStatus() {
@@ -38,6 +51,10 @@ class GainzApp {
 
     updateAuthUI(isLoggedIn) {
         const authNav = document.getElementById('authNav');
+        if (!authNav) {
+            return;
+        }
+
         if (isLoggedIn) {
             authNav.innerHTML = `
                 <li class="nav-item">
@@ -445,4 +462,248 @@ document.addEventListener('DOMContentLoaded', () => {
             window.app.showSection(sectionName);
         }
     };
+    initSignupPage();
 });
+
+const SIGNUP_STATE_KEY = 'gainz_signup_state';
+const SIGNUP_ROUTES = {
+    step1: './step2.php',
+    step2: './step3.php',
+    step3: './summary.php',
+    summary: '../login.php'
+};
+
+const SIGNUP_BACK_ROUTES = {
+    step2: './step1.php',
+    step3: './step2.php',
+    summary: './step3.php'
+};
+
+function getSignupState() {
+    const raw = sessionStorage.getItem(SIGNUP_STATE_KEY);
+    if (!raw) {
+        return {
+            objective: '',
+            objectiveLabel: '',
+            height: '',
+            weight: '',
+            age: '',
+            sex: '',
+            activity: '',
+            activityLabel: ''
+        };
+    }
+
+    try {
+        return JSON.parse(raw);
+    } catch (error) {
+        return {
+            objective: '',
+            objectiveLabel: '',
+            height: '',
+            weight: '',
+            age: '',
+            sex: '',
+            activity: '',
+            activityLabel: ''
+        };
+    }
+}
+
+function saveSignupState(state) {
+    sessionStorage.setItem(SIGNUP_STATE_KEY, JSON.stringify(state));
+}
+
+function initSignupPage() {
+    const page = document.body.dataset.signupPage;
+    if (!page) {
+        return;
+    }
+
+    const state = getSignupState();
+    const backButton = document.getElementById('backButton');
+    const nextButton = document.getElementById('nextButton');
+
+    if (backButton) {
+        backButton.addEventListener('click', () => {
+            navigateSignupPage(page, false);
+        });
+    }
+
+    if (nextButton) {
+        nextButton.addEventListener('click', () => {
+            if (validateSignupPage(page)) {
+                navigateSignupPage(page, true);
+            }
+        });
+    }
+
+    document.querySelectorAll('.signup-option').forEach(button => {
+        button.addEventListener('click', () => {
+            handleSignupOption(page, button);
+        });
+    });
+
+    document.querySelectorAll('.signup-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            handleSignupToggle(button);
+        });
+    });
+
+    if (page === 'step1') {
+        if (state.objective) {
+            highlightSignupOption(state.objective);
+        }
+        if (backButton) {
+            backButton.style.visibility = 'hidden';
+        }
+    }
+
+    if (page === 'step2') {
+        if (!state.objective) {
+            window.location.href = './step1.php';
+            return;
+        }
+        document.getElementById('heightInput').value = state.height;
+        document.getElementById('weightInput').value = state.weight;
+        document.getElementById('ageInput').value = state.age;
+        if (state.sex) {
+            highlightSignupToggle(state.sex);
+        }
+    }
+
+    if (page === 'step3') {
+        if (!state.height || !state.weight || !state.age || !state.sex) {
+            window.location.href = './step2.php';
+            return;
+        }
+        highlightSignupOption(state.activity);
+    }
+
+    if (page === 'summary') {
+        if (!state.activity) {
+            window.location.href = './step3.php';
+            return;
+        }
+        renderSignupSummary(state);
+        if (nextButton) {
+            nextButton.textContent = 'COMPLETE';
+        }
+    }
+}
+
+function handleSignupOption(page, button) {
+    const state = getSignupState();
+    const value = button.dataset.value;
+    const label = button.dataset.label;
+
+    if (!value) {
+        return;
+    }
+
+    if (page === 'step1') {
+        state.objective = value;
+        state.objectiveLabel = label || value;
+        highlightSignupOption(value);
+    }
+
+    if (page === 'step3') {
+        state.activity = value;
+        state.activityLabel = label || value;
+        highlightSignupOption(value);
+    }
+
+    saveSignupState(state);
+}
+
+function handleSignupToggle(button) {
+    const state = getSignupState();
+    const value = button.dataset.value;
+
+    if (!value) {
+        return;
+    }
+
+    state.sex = value;
+    saveSignupState(state);
+    highlightSignupToggle(value);
+}
+
+function highlightSignupOption(value) {
+    document.querySelectorAll('.signup-option').forEach(button => {
+        button.classList.toggle('is-active', button.dataset.value === value);
+    });
+}
+
+function highlightSignupToggle(value) {
+    document.querySelectorAll('.signup-toggle').forEach(toggle => {
+        toggle.classList.toggle('is-active', toggle.dataset.value === value);
+    });
+}
+
+function validateSignupPage(page) {
+    const state = getSignupState();
+
+    if (page === 'step1') {
+        if (!state.objective) {
+            alert('Select an objective to continue.');
+            return false;
+        }
+    }
+
+    if (page === 'step2') {
+        const heightInput = document.getElementById('heightInput');
+        const weightInput = document.getElementById('weightInput');
+        const ageInput = document.getElementById('ageInput');
+
+        const height = heightInput ? heightInput.value.trim() : '';
+        const weight = weightInput ? weightInput.value.trim() : '';
+        const age = ageInput ? ageInput.value.trim() : '';
+
+        if (!height || !weight || !age || !state.sex) {
+            alert('Complete all biometrics before continuing.');
+            return false;
+        }
+
+        state.height = height;
+        state.weight = weight;
+        state.age = age;
+        saveSignupState(state);
+    }
+
+    if (page === 'step3') {
+        if (!state.activity) {
+            alert('Choose your daily activity profile.');
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function navigateSignupPage(page, forward) {
+    if (forward) {
+        const destination = SIGNUP_ROUTES[page];
+        if (destination) {
+            if (page === 'summary') {
+                sessionStorage.removeItem(SIGNUP_STATE_KEY);
+            }
+            window.location.href = destination;
+        }
+        return;
+    }
+
+    const destination = SIGNUP_BACK_ROUTES[page];
+    if (destination) {
+        window.location.href = destination;
+    }
+}
+
+function renderSignupSummary(state) {
+    document.getElementById('summaryObjective').textContent = state.objectiveLabel || '-';
+    document.getElementById('summaryActivity').textContent = state.activityLabel || '-';
+    document.getElementById('summarySex').textContent = state.sex ? state.sex.toUpperCase() : '-';
+    document.getElementById('summaryWeight').textContent = state.weight ? state.weight + ' kg' : '-';
+    document.getElementById('summaryHeight').textContent = state.height ? state.height + ' cm' : '-';
+    document.getElementById('summaryAge').textContent = state.age ? state.age + ' yrs' : '-';
+}

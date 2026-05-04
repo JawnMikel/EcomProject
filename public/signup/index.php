@@ -1,3 +1,6 @@
+<?php
+// GAINZ signup gateway
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GAINZ New Recruit</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
+    <link href="../css/style.css" rel="stylesheet">
 </head>
 <body class="auth-background">
     <div class="auth-page">
@@ -39,12 +42,12 @@
                         <span class="auth-field-icon"><i class="fas fa-lock"></i></span>
                     </div>
 
-                    <a href="signup-flow.html" class="auth-button">
+                    <a href="step1.php" class="auth-button">
                         CREATE ACCOUNT
                     </a>
 
                     <div class="auth-actions signup-actions">
-                        <a href="index.html" class="auth-action-link">ALREADY A RECRUIT? LOGIN</a>
+                        <a href="../login.php" class="auth-action-link">ALREADY A RECRUIT? LOGIN</a>
                     </div>
                 </div>
             </section>
@@ -59,5 +62,7 @@
             </footer>
         </div>
     </div>
+
+    <script src="../js/app.js"></script>
 </body>
 </html>

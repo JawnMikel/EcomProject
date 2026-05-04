@@ -40,13 +40,32 @@ if (strpos($accept, 'application/json') !== false ||
     $app->run();
 
 } else {
-    // Serve the frontend HTML
-    $htmlFile = __DIR__ . '/index.html';
-    if (file_exists($htmlFile)) {
-        header('Content-Type: text/html');
-        readfile($htmlFile);
-    } else {
-        http_response_code(404);
-        echo '<h1>Frontend not found</h1><p>Please run the application setup first.</p>';
+    // Serve frontend PHP and static files
+    $pathInfo = parse_url($path, PHP_URL_PATH) ?: '/';
+    $pathInfo = strtok($pathInfo, '?');
+
+    if ($pathInfo === '/' || $pathInfo === '') {
+        $pathInfo = '/login.php';
     }
+
+    $filePath = __DIR__ . $pathInfo;
+
+    if (is_dir($filePath) && file_exists($filePath . '/index.php')) {
+        $filePath .= '/index.php';
+    }
+
+    if (is_file($filePath)) {
+        if (str_ends_with($filePath, '.php')) {
+            require $filePath;
+            return;
+        }
+
+        $mimeType = mime_content_type($filePath) ?: 'text/plain';
+        header('Content-Type: ' . $mimeType);
+        readfile($filePath);
+        return;
+    }
+
+    http_response_code(404);
+    echo '<h1>Frontend not found</h1><p>Please run the application setup first.</p>';
 }

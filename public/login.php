@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+<?php
+// GAINZ login page
+?>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -25,24 +28,26 @@
                         <div class="auth-line"></div>
                     </div>
 
-                    <label class="auth-label">Email or Username</label>
-                    <div class="auth-field">
-                        <input type="text" placeholder="" aria-label="Identity Key">
-                        <span class="auth-field-icon"><i class="fas fa-user"></i></span>
-                    </div>
+                    <form id="loginForm" class="auth-form">
+                        <label class="auth-label" for="loginEmail">Email or Username</label>
+                        <div class="auth-field">
+                            <input id="loginEmail" type="text" placeholder="IDENTITY KEY" aria-label="Identity Key">
+                            <span class="auth-field-icon"><i class="fas fa-user"></i></span>
+                        </div>
 
-                    <label class="auth-label">Password</label>
-                    <div class="auth-field">
-                        <input type="password" placeholder="" aria-label="Access Code">
-                        <span class="auth-field-icon"><i class="fas fa-eye"></i></span>
-                    </div>
+                        <label class="auth-label" for="loginPassword">Password</label>
+                        <div class="auth-field">
+                            <input id="loginPassword" type="password" placeholder="ACCESS CODE" aria-label="Access Code">
+                            <span class="auth-field-icon"><i class="fas fa-eye"></i></span>
+                        </div>
 
-                    <button type="button" class="auth-button">
-                        LOGIN <i class="fas fa-bolt"></i>
-                    </button>
+                        <button type="submit" class="auth-button">
+                            LOGIN <i class="fas fa-bolt"></i>
+                        </button>
+                    </form>
 
                     <div class="auth-actions">
-                        <a href="signup.html" class="auth-action-link">NEW RECRUIT? CREATE ACCOUNT</a>
+                        <a href="signup/" class="auth-action-link">NEW RECRUIT? CREATE ACCOUNT</a>
                         <a href="#" class="auth-action-link reset-link"><i class="fas fa-redo"></i> RESET PASSWORD</a>
                     </div>
                 </div>
@@ -60,5 +65,7 @@
             </footer>
         </div>
     </div>
+
+    <script src="js/app.js"></script>
 </body>
 </html>
