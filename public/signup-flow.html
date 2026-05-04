@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAINZ Recruitment Flow</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="auth-background">
+    <div class="wizard-page">
+        <div class="wizard-inner">
+            <header class="wizard-header">
+                <div class="auth-logo">
+                    <span class="auth-logo-icon"><i class="fas fa-dumbbell"></i></span>
+                    <span class="auth-logo-text">GAINZ</span>
+                </div>
+                <div class="wizard-status">
+                    <div>STEP <span id="stepNumber">01</span> / 04</div>
+                    <div>MISSION OBJECTIVE</div>
+                </div>
+            </header>
+
+            <section class="wizard-card">
+                <div class="wizard-card-content">
+                    <div class="wizard-progress">
+                        <div class="wizard-progress-fill" id="progressFill" style="width: 25%;"></div>
+                    </div>
+
+                    <div class="wizard-hero">CHOOSE YOUR <span class="wizard-accent">OBJECTIVE</span></div>
+                    <div class="wizard-description">Select your primary training directive to calibrate your workout architecture.</div>
+
+                    <div class="wizard-step-panels">
+                        <div class="wizard-step-panel is-active" data-step="0">
+                            <div class="wizard-option-grid">
+                                <button type="button" class="wizard-option" data-value="strength" data-label="Strength & Power" onclick="selectOption(this)">
+                                    <div class="wizard-option-title"><i class="fas fa-dumbbell"></i> STRENGTH & POWER</div>
+                                    <div class="wizard-option-description">Heavy compound movements and raw explosive force.</div>
+                                </button>
+                                <button type="button" class="wizard-option" data-value="endurance" data-label="Endurance & Cardio" onclick="selectOption(this)">
+                                    <div class="wizard-option-title"><i class="fas fa-bolt"></i> ENDURANCE & CARDIO</div>
+                                    <div class="wizard-option-description">High-intensity conditioning for sustained output.</div>
+                                </button>
+                                <button type="button" class="wizard-option" data-value="body" data-label="Body Composition" onclick="selectOption(this)">
+                                    <div class="wizard-option-title"><i class="fas fa-chart-line"></i> BODY COMPOSITION</div>
+                                    <div class="wizard-option-description">Hypertrophy-focused programming for definition.</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="wizard-step-panel" data-step="1">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-field">
+                                    <label for="heightInput">Height (cm)</label>
+                                    <input id="heightInput" type="number" placeholder="180" min="100" max="250">
+                                </div>
+                                <div class="wizard-field">
+                                    <label for="weightInput">Weight (kg)</label>
+                                    <input id="weightInput" type="number" placeholder="85.0" step="0.1" min="30" max="200">
+                                </div>
+                                <div class="wizard-field">
+                                    <label for="ageInput">Age</label>
+                                    <input id="ageInput" type="number" placeholder="28" min="14" max="99">
+                                </div>
+                                <div class="wizard-field">
+                                    <label>Sex</label>
+                                    <div class="wizard-toggle-group">
+                                        <button type="button" class="wizard-toggle" data-value="male" onclick="selectSex(this)">MALE</button>
+                                        <button type="button" class="wizard-toggle" data-value="female" onclick="selectSex(this)">FEMALE</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="wizard-step-panel" data-step="2">
+                            <div class="wizard-option-grid">
+                                <button type="button" class="wizard-option" data-value="sedentary" data-label="Sedentary" onclick="selectActivity(this)">
+                                    <div class="wizard-option-title">SEDENTARY</div>
+                                    <div class="wizard-option-description">Office-based, minimal physical movement.</div>
+                                </button>
+                                <button type="button" class="wizard-option" data-value="light" data-label="Lightly Active" onclick="selectActivity(this)">
+                                    <div class="wizard-option-title">LIGHTLY ACTIVE</div>
+                                    <div class="wizard-option-description">Active 1-2x a week with light exercise.</div>
+                                </button>
+                                <button type="button" class="wizard-option" data-value="moderate" data-label="Moderately Active" onclick="selectActivity(this)">
+                                    <div class="wizard-option-title">MODERATELY ACTIVE</div>
+                                    <div class="wizard-option-description">Active 3-5x a week with dedicated training.</div>
+                                </button>
+                                <button type="button" class="wizard-option" data-value="very" data-label="Very Active" onclick="selectActivity(this)">
+                                    <div class="wizard-option-title">VERY ACTIVE</div>
+                                    <div class="wizard-option-description">Active 6-7x a week with high-intensity training.</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="wizard-step-panel" data-step="3">
+                            <div class="wizard-summary">
+                                <div class="wizard-hero">RECRUIT <span class="wizard-accent">VERIFIED</span></div>
+                                <div class="wizard-description">Profile synchronized. System optimized for peak output. Initiation sequence ready.</div>
+
+                                <div class="wizard-summary-grid">
+                                    <div class="wizard-summary-card">
+                                        <div class="wizard-summary-card-title">OBJECTIVE</div>
+                                        <div class="wizard-summary-card-value" id="summaryObjective">-</div>
+                                    </div>
+                                    <div class="wizard-summary-card">
+                                        <div class="wizard-summary-card-title">ACTIVITY</div>
+                                        <div class="wizard-summary-card-value" id="summaryActivity">-</div>
+                                    </div>
+                                    <div class="wizard-summary-card">
+                                        <div class="wizard-summary-card-title">SEX</div>
+                                        <div class="wizard-summary-card-value" id="summarySex">-</div>
+                                    </div>
+                                    <div class="wizard-summary-card">
+                                        <div class="wizard-summary-card-title">STATUS</div>
+                                        <div class="wizard-summary-card-value">DEPLOYMENT READY</div>
+                                    </div>
+                                </div>
+
+                                <div class="wizard-summary-metrics">
+                                    <div class="wizard-summary-metric">
+                                        <span>WEIGHT</span>
+                                        <strong id="summaryWeight">- kg</strong>
+                                    </div>
+                                    <div class="wizard-summary-metric">
+                                        <span>HEIGHT</span>
+                                        <strong id="summaryHeight">- cm</strong>
+                                    </div>
+                                    <div class="wizard-summary-metric">
+                                        <span>AGE</span>
+                                        <strong id="summaryAge">- yrs</strong>
+                                    </div>
+                                </div>
+
+                                <div class="wizard-summary-note">AWAITING COMMAND TO INITIATE PERFORMANCE SEQUENCE.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wizard-actions">
+                        <button type="button" class="wizard-button secondary" id="backButton" onclick="prevStep()">BACK</button>
+                        <button type="button" class="wizard-button" id="nextButton" onclick="nextStep()">NEXT STEP</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const stepCount = 4;
+        const state = {
+            objective: '',
+            objectiveLabel: '',
+            height: '',
+            weight: '',
+            age: '',
+            sex: '',
+            activity: '',
+            activityLabel: ''
+        };
+
+        let currentStep = 0;
+
+        function showStep(step) {
+            currentStep = step;
+            document.querySelectorAll('.wizard-step-panel').forEach(panel => {
+                panel.classList.toggle('is-active', Number(panel.dataset.step) === step);
+            });
+
+            document.getElementById('stepNumber').textContent = String(step + 1).padStart(2, '0');
+            document.getElementById('progressFill').style.width = ((step + 1) / stepCount * 100) + '%';
+
+            const nextButton = document.getElementById('nextButton');
+            nextButton.textContent = step === stepCount - 1 ? 'START TRAINING' : 'NEXT STEP';
+            document.getElementById('backButton').style.visibility = step === 0 ? 'hidden' : 'visible';
+
+            if (step === stepCount - 1) {
+                renderSummary();
+            }
+        }
+
+        function selectOption(element) {
+            document.querySelectorAll('[data-value][data-label]').forEach(option => {
+                option.classList.toggle('is-active', option === element);
+            });
+            state.objective = element.dataset.value;
+            state.objectiveLabel = element.dataset.label;
+        }
+
+        function selectSex(element) {
+            document.querySelectorAll('.wizard-toggle').forEach(toggle => {
+                toggle.classList.toggle('is-active', toggle === element);
+            });
+            state.sex = element.dataset.value;
+        }
+
+        function selectActivity(element) {
+            document.querySelectorAll('.wizard-option[data-value]').forEach(option => {
+                if (option.closest('[data-step="2"]')) {
+                    option.classList.toggle('is-active', option === element);
+                }
+            });
+            state.activity = element.dataset.value;
+            state.activityLabel = element.dataset.label;
+        }
+
+        function validateStep() {
+            if (currentStep === 0 && !state.objective) {
+                alert('Select an objective to continue.');
+                return false;
+            }
+
+            if (currentStep === 1) {
+                const height = document.getElementById('heightInput').value.trim();
+                const weight = document.getElementById('weightInput').value.trim();
+                const age = document.getElementById('ageInput').value.trim();
+
+                if (!height || !weight || !age || !state.sex) {
+                    alert('Complete all biometrics before continuing.');
+                    return false;
+                }
+
+                state.height = height;
+                state.weight = weight;
+                state.age = age;
+            }
+
+            if (currentStep === 2 && !state.activity) {
+                alert('Choose your daily activity profile.');
+                return false;
+            }
+
+            return true;
+        }
+
+        function nextStep() {
+            if (!validateStep()) return;
+
+            if (currentStep < stepCount - 1) {
+                showStep(currentStep + 1);
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        function prevStep() {
+            if (currentStep === 0) return;
+            showStep(currentStep - 1);
+        }
+
+        function renderSummary() {
+            document.getElementById('summaryObjective').textContent = state.objectiveLabel || '-';
+            document.getElementById('summaryActivity').textContent = state.activityLabel || '-';
+            document.getElementById('summarySex').textContent = state.sex ? state.sex.toUpperCase() : '-';
+            document.getElementById('summaryWeight').textContent = state.weight ? state.weight + ' kg' : '-';
+            document.getElementById('summaryHeight').textContent = state.height ? state.height + ' cm' : '-';
+            document.getElementById('summaryAge').textContent = state.age ? state.age + ' yrs' : '-';
+        }
+
+        showStep(0);
+    </script>
+</body>
+</html>
