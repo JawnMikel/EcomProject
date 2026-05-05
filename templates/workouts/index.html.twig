@@ -1,0 +1,51 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('workout.history') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('workout.history') }}</h1>
+    </div>
+    <a href="{{ path('workouts.start') }}" class="btn btn-success">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        {{ i18n.trans('workout.start_session') }}
+    </a>
+</div>
+
+{% if sessions is empty %}
+<div class="card text-center">
+    <p>{{ i18n.trans('workout.no_sessions') }}</p>
+    <a href="{{ path('workouts.start') }}" class="btn btn-primary mt-3">
+        {{ i18n.trans('workout.start_session') }}
+    </a>
+</div>
+{% else %}
+<div class="card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{{ i18n.trans('workout.date') }}</th>
+                <th>{{ i18n.trans('workout.duration') }}</th>
+                <th>{{ i18n.trans('workout.exercises') }}</th>
+                <th>{{ i18n.trans('general.actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+            <tr>
+                <td>{{ session.getStartDate() }}</td>
+                <td>{{ session.getFormattedDuration() }}</td>
+                <td>{{ session.isCompleted() ? 'Completed' : 'In Progress' }}</td>
+                <td>
+                    <a href="{{ path('workouts.session', {id: session.id}) }}" class="btn btn-outline">
+                        {{ i18n.trans('workout.view_session') }}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

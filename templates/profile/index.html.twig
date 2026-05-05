@@ -1,0 +1,48 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('profile.title') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('profile.title') }}</h1>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">{{ i18n.trans('profile.title') }}</div>
+        
+        <div class="form-group">
+            <label>{{ i18n.trans('profile.username') }}</label>
+            <p>{{ currentUser.username }}</p>
+        </div>
+        
+        <div class="form-group">
+            <label>{{ i18n.trans('profile.email') }}</label>
+            <p>{{ currentUser.email }}</p>
+        </div>
+        
+        <div class="form-group">
+            <label>{{ i18n.trans('profile.member_since') }}</label>
+            <p>{{ currentUser.createdAt|date('Y-m-d') }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">{{ i18n.trans('profile.2fa') }}</div>
+        
+        {% if currentUser.twoFactorEnabled %}
+        <p class="flash-success" style="padding: 8px; border-radius: 4px;">
+            ✓ {{ i18n.trans('auth.2fa_enabled') }}
+        </p>
+        {% else %}
+        <p style="color: var(--text-muted);">{{ i18n.trans('auth.2fa_disabled') }}</p>
+        {% endif %}
+        
+        <a href="{{ path('profile.2fa') }}" class="btn btn-outline mt-2">
+            {{ i18n.trans('profile.2fa') }}
+        </a>
+    </div>
+</div>
+{% endblock %}

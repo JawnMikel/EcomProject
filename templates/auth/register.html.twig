@@ -1,0 +1,50 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('auth.register') }}{% endblock %}
+
+{% block content %}
+<div class="flex flex-center mt-4">
+    <div class="card" style="max-width: 500px; width: 100%;">
+        <div class="card-header text-center">{{ i18n.trans('auth.register') }}</div>
+
+        <form method="POST" action="{{ path('register') }}">
+            <div class="form-group">
+                <label for="email">{{ i18n.trans('auth.email') }}</label>
+                <input type="email" id="email" name="email" class="form-control" required placeholder="your@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="username">{{ i18n.trans('auth.username') }}</label>
+                <input type="text" id="username" name="username" class="form-control" required placeholder="johndoe">
+            </div>
+
+            <div class="form-group">
+                <label for="date_of_birth">{{ i18n.trans('auth.date_of_birth') }}</label>
+                <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" required max="{{ date('Y-m-d', strtotime('-16 years')) }}">
+                <small style="color: var(--text-muted);">{{ i18n.trans('auth.must_be_16') }}</small>
+            </div>
+
+            <div class="form-group">
+                <label for="password">{{ i18n.trans('auth.password') }}</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+                <small style="color: var(--text-muted);">Min 8 chars, 1 uppercase, 1 lowercase, 1 number</small>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">{{ i18n.trans('auth.confirm_password') }}</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                {{ i18n.trans('auth.register') }}
+            </button>
+        </form>
+
+        <p class="text-center mt-3">
+            {{ i18n.trans('auth.have_account') }}
+            <a href="{{ path('login') }}">{{ i18n.trans('auth.login') }}</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+</write_to_file>

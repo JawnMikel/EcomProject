@@ -1,0 +1,112 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('exercises.title') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('exercises.title') }}</h1>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <form method="GET" action="{{ path('exercises') }}" class="flex gap-2 items-center">
+        <div class="form-group" style="margin-bottom: 0; flex: 1;">
+            <input type="text" name="search" class="form-control" 
+                   placeholder="{{ i18n.trans('exercises.search') }}" 
+                   value="{{ search|default('') }}">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+            <select name="category" class="form-control">
+                <option value="">{{ i18n.trans('exercises.all_categories') }}</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}" {{ currentCategory == category.id ? 'selected' : '' }}>
+                    {{ category.getName(locale) }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+            <select name="difficulty" class="form-control">
+                <option value="">{{ i18n.trans('general.all') }}</option>
+                <option value="beginner" {{ currentDifficulty == 'beginner' ? 'selected' : '' }}>{{ i18n.trans('exercises.beginner') }}</option>
+                <option value="intermediate" {{ currentDifficulty == 'intermediate' ? 'selected' : '' }}>{{ i18n.trans('exercises.intermediate') }}</option>
+                <option value="advanced" {{ currentDifficulty == 'advanced' ? 'selected' : '' }}>{{ i18n.trans('exercises.advanced') }}</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">{{ i18n.trans('general.filter') }}</button>
+    </form>
+</div>
+
+{% if exercises is empty %}
+<div class="card text-center">
+    <p>{{ i18n.trans('exercises.no_exercises') }}</p>
+</div>
+{% else %}
+<div class="grid grid-2">
+    {% for exercise in exercises %}
+    <div class="card">
+        <div class="flex flex-between items-center mb-2">
+            <h3 style="font-size: 18px;">{{ exercise.getName(locale) }}</h3>
+            <span class="badge badge-{{ exercise.difficulty }}">{{ exercise.getDifficultyLabel(locale) }}</span>
+        </div>
+        
+        {% if exercise.category %}
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 8px;">
+            {{ exercise.category.getName(locale) }}
+        </p>
+        {% endif %}
+        
+        {% if exercise.getDescription(locale) %}
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">
+            {{ exercise.getDescription(locale) }}
+        </p>
+        {% endif %}
+        
+        {% if exercise.equipment %}
+        <p style="font-size: 12px; color: var(--text-muted);">
+            <strong>{{ i18n.trans('exercises.equipment') }}:</strong> {{ exercise.equipment }}
+        </p>
+        {% endif %}
+        
+        <a href="{{ path('exercises.show', {id: exercise.id}) }}" class="btn btn-outline mt-2">
+            {{ i18n.trans('exercises.view_details') }}
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="search"]');
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function() {
+            if (searchInput.value.length >= 2) {
+                fetchExercises(searchInput.value);
+            }
+        }, 300);
+    });
+});
+
+function fetchExercises(query) {
+    const category = document.querySelector('select[name="category"]').value;
+    fetch(`/my-shop-master/my-shop-master/public/api/exercises/search?q=${encodeURIComponent(query)}&category=${category}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Search results:', data.exercises);
+            // Could update the UI dynamically here
+        });
+}
+</script>
+{% endblock %}
+</write_to_file>

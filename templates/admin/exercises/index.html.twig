@@ -1,0 +1,94 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('admin.exercises') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('admin.exercises') }}</h1>
+    </div>
+    <button class="btn btn-primary" onclick="document.getElementById('addModal').style.display='block'">
+        {{ i18n.trans('admin.add_exercise') }}
+    </button>
+</div>
+
+<div class="card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{{ i18n.trans('exercises.name') }}</th>
+                <th>{{ i18n.trans('exercises.category') }}</th>
+                <th>{{ i18n.trans('exercises.difficulty') }}</th>
+                <th>{{ i18n.trans('general.actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exercise in exercises %}
+            <tr>
+                <td>{{ exercise.getName(locale) }}</td>
+                <td>
+                    {% if exercise.category %}
+                        {{ exercise.category.getName(locale) }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td><span class="badge badge-{{ exercise.difficulty }}">{{ exercise.getDifficultyLabel(locale) }}</span></td>
+                <td>
+                    <form method="POST" action="{{ path('admin.exercises.delete', {id: exercise.id}) }}" style="display: inline;" onsubmit="return confirm('{{ i18n.trans('admin.confirm_delete') }}')">
+                        <button type="submit" class="btn btn-danger">{{ i18n.trans('admin.delete') }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Exercise Modal -->
+<div id="addModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div class="card" style="max-width: 600px; margin: 100px auto; position: relative;">
+        <button onclick="document.getElementById('addModal').style.display='none'" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+        
+        <div class="card-header">{{ i18n.trans('admin.add_exercise') }}</div>
+        
+        <form method="POST" action="{{ path('admin.exercises.store') }}">
+            <div class="form-group">
+                <label>{{ i18n.trans('exercises.name') }} (EN)</label>
+                <input type="text" name="name_en" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label>{{ i18n.trans('exercises.name') }} (FR)</label>
+                <input type="text" name="name_fr" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label>{{ i18n.trans('exercises.category') }}</label>
+                <select name="category_id" class="form-control">
+                    <option value="">None</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.getName(locale) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>{{ i18n.trans('exercises.difficulty') }}</label>
+                <select name="difficulty" class="form-control">
+                    <option value="beginner">{{ i18n.trans('exercises.beginner') }}</option>
+                    <option value="intermediate">{{ i18n.trans('exercises.intermediate') }}</option>
+                    <option value="advanced">{{ i18n.trans('exercises.advanced') }}</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>{{ i18n.trans('exercises.equipment') }}</label>
+                <input type="text" name="equipment" class="form-control">
+            </div>
+            
+            <button type="submit" class="btn btn-primary">{{ i18n.trans('admin.save') }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

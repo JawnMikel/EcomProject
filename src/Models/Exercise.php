@@ -1,121 +1,109 @@
 <?php
 
-namespace Gainz\Models;
+namespace App\Models;
 
-/**
- * Exercise Model
- * Represents an exercise in the system
- */
 class Exercise
 {
-    private int $id;
-    private string $name;
-    private string $description;
-    private string $category;
-    private string $muscleGroup;
-    private ?string $instructions;
-    private ?string $imageUrl;
-    private ?string $videoUrl;
-    private int $difficulty;
-    private \DateTime $createdAt;
-    private \DateTime $updatedAt;
+    public const DIFFICULTY_BEGINNER = 'beginner';
+    public const DIFFICULTY_INTERMEDIATE = 'intermediate';
+    public const DIFFICULTY_ADVANCED = 'advanced';
 
-    public function getId(): int
+    public function __construct(
+        public int $id,
+        public ?int $categoryId,
+        public string $nameEn,
+        public string $nameFr,
+        public ?string $descriptionEn = null,
+        public ?string $descriptionFr = null,
+        public string $difficulty = self::DIFFICULTY_BEGINNER,
+        public ?string $equipment = null,
+        public ?string $imageUrl = null,
+        public bool $isActive = true,
+        public string $createdAt = '',
+        public string $updatedAt = '',
+        public ?Category $category = null
+    ) {}
+
+    /**
+     * Map a RedBeanPHP bean to a typed Exercise object.
+     */
+    public static function fromBean(object $bean): self
     {
-        return $this->id;
+        return new self(
+            id: (int) $bean->id,
+            categoryId: $bean->category_id ? (int) $bean->category_id : null,
+            nameEn: (string) $bean->name_en,
+            nameFr: (string) $bean->name_fr,
+            descriptionEn: $bean->description_en ? (string) $bean->description_en : null,
+            descriptionFr: $bean->description_fr ? (string) $bean->description_fr : null,
+            difficulty: (string) ($bean->difficulty ?? self::DIFFICULTY_BEGINNER),
+            equipment: $bean->equipment ? (string) $bean->equipment : null,
+            imageUrl: $bean->image_url ? (string) $bean->image_url : null,
+            isActive: (bool) ($bean->is_active ?? true),
+            createdAt: (string) ($bean->created_at ?? ''),
+            updatedAt: (string) ($bean->updated_at ?? ''),
+            category: $bean->ownCategory ? Category::fromBean($bean->ownCategory) : null
+        );
     }
 
-    public function setId(int $id): self
+    /**
+     * Get name based on locale
+     */
+    public function getName(string $locale = 'en'): string
     {
-        $this->id = $id;
-        return $this;
+        return $locale === 'fr' ? $this->nameFr : $this->nameEn;
     }
 
-    public function getName(): string
+    /**
+     * Get description based on locale
+     */
+    public function getDescription(string $locale = 'en'): ?string
     {
-        return $this->name;
+        return $locale === 'fr' ? $this->descriptionFr : $this->descriptionEn;
     }
 
-    public function setName(string $name): self
+    /**
+     * Get difficulty label based on locale
+     */
+    public function getDifficultyLabel(string $locale = 'en'): string
     {
-        $this->name = $name;
-        return $this;
+        $labels = [
+            'en' => [
+                self::DIFFICULTY_BEGINNER => 'Beginner',
+                self::DIFFICULTY_INTERMEDIATE => 'Intermediate',
+                self::DIFFICULTY_ADVANCED => 'Advanced'
+            ],
+            'fr' => [
+                self::DIFFICULTY_BEGINNER => 'Débutant',
+                self::DIFFICULTY_INTERMEDIATE => 'Intermédiaire',
+                self::DIFFICULTY_ADVANCED => 'Avancé'
+            ]
+        ];
+
+        return $labels[$locale][$this->difficulty] ?? $this->difficulty;
     }
 
-    public function getDescription(): string
+    /**
+     * Check if exercise is beginner level
+     */
+    public function isBeginner(): bool
     {
-        return $this->description;
+        return $this->difficulty === self::DIFFICULTY_BEGINNER;
     }
 
-    public function setDescription(string $description): self
+    /**
+     * Check if exercise is intermediate level
+     */
+    public function isIntermediate(): bool
     {
-        $this->description = $description;
-        return $this;
+        return $this->difficulty === self::DIFFICULTY_INTERMEDIATE;
     }
 
-    public function getCategory(): string
+    /**
+     * Check if exercise is advanced level
+     */
+    public function isAdvanced(): bool
     {
-        return $this->category;
-    }
-
-    public function setCategory(string $category): self
-    {
-        $this->category = $category;
-        return $this;
-    }
-
-    public function getMuscleGroup(): string
-    {
-        return $this->muscleGroup;
-    }
-
-    public function setMuscleGroup(string $muscleGroup): self
-    {
-        $this->muscleGroup = $muscleGroup;
-        return $this;
-    }
-
-    public function getInstructions(): ?string
-    {
-        return $this->instructions;
-    }
-
-    public function setInstructions(?string $instructions): self
-    {
-        $this->instructions = $instructions;
-        return $this;
-    }
-
-    public function getImageUrl(): ?string
-    {
-        return $this->imageUrl;
-    }
-
-    public function setImageUrl(?string $imageUrl): self
-    {
-        $this->imageUrl = $imageUrl;
-        return $this;
-    }
-
-    public function getVideoUrl(): ?string
-    {
-        return $this->videoUrl;
-    }
-
-    public function setVideoUrl(?string $videoUrl): self
-    {
-        $this->videoUrl = $videoUrl;
-        return $this;
-    }
-
-    public function getDifficulty(): int
-    {
-        return $this->difficulty;
-    }
-
-    public function setDifficulty(int $difficulty): self
-    {
-        $this->difficulty = $difficulty;
-        return $this;
+        return $this->difficulty === self::DIFFICULTY_ADVANCED;
     }
 }

@@ -1,0 +1,41 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('workout.start_session') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('workout.start_session') }}</h1>
+    </div>
+</div>
+
+<div class="card" style="max-width: 500px;">
+    {% if programWorkout %}
+    <div class="card-header">
+        {{ i18n.trans('programs.day') }} {{ programWorkout.dayOrder }}: {{ programWorkout.getName(locale) }}
+    </div>
+    
+    {% if programWorkout.getDescription(locale) %}
+    <p style="color: var(--text-muted); margin-bottom: 16px;">
+        {{ programWorkout.getDescription(locale) }}
+    </p>
+    {% endif %}
+    {% else %}
+    <div class="card-header">{{ i18n.trans('workout.free_workout') }}</div>
+    <p style="color: var(--text-muted); margin-bottom: 16px;">
+        Start a workout without a specific program.
+    </p>
+    {% endif %}
+    
+    <form method="POST" action="{{ path('workouts.start') }}">
+        {% if programWorkout %}
+        <input type="hidden" name="program_workout_id" value="{{ programWorkout.id }}">
+        {% endif %}
+        
+        <button type="submit" class="btn btn-success" style="width: 100%;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            {{ i18n.trans('workout.start_session') }}
+        </button>
+    </form>
+</div>
+{% endblock %}

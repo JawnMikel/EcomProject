@@ -1,0 +1,29 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('programs.title') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('programs.title') }}</h1>
+    </div>
+</div>
+
+<div class="grid grid-3">
+    {% for program in programs %}
+    <div class="card">
+        <h3 style="font-size: 18px; margin-bottom: 8px;">{{ program.getName(locale) }}</h3>
+        
+        {% if program.getDescription(locale) %}
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+            {{ program.getDescription(locale) }}
+        </p>
+        {% endif %}
+        
+        <a href="{{ path('programs.show', {id: program.id}) }}" class="btn btn-primary">
+            {{ i18n.trans('programs.start_program') }}
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

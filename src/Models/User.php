@@ -1,114 +1,65 @@
 <?php
 
-namespace Gainz\Models;
+namespace App\Models;
 
-/**
- * User Model
- * Represents a user in the application
- */
 class User
 {
-    private int $id;
-    private string $email;
-    private string $password;
-    private string $firstName;
-    private string $lastName;
-    private int $age;
-    private string $language;
-    private bool $twoFactorEnabled;
-    private \DateTime $createdAt;
-    private \DateTime $updatedAt;
+    public function __construct(
+        public int $id,
+        public string $email,
+        public string $username,
+        public string $dateOfBirth,
+        public string $role = 'user',
+        public bool $twoFactorEnabled = false,
+        public ?string $twoFactorSecret = null,
+        public string $createdAt = '',
+        public string $updatedAt = ''
+    ) {}
 
-    public function getId(): int
+    /**
+     * Map a RedBeanPHP bean to a typed User object.
+     */
+    public static function fromBean(object $bean): self
     {
-        return $this->id;
+        return new self(
+            id: (int) $bean->id,
+            email: (string) $bean->email,
+            username: (string) $bean->username,
+            dateOfBirth: (string) $bean->date_of_birth,
+            role: (string) ($bean->role ?? 'user'),
+            twoFactorEnabled: (bool) ($bean->two_factor_enabled ?? false),
+            twoFactorSecret: $bean->two_factor_secret ? (string) $bean->two_factor_secret : null,
+            createdAt: (string) ($bean->created_at ?? ''),
+            updatedAt: (string) ($bean->updated_at ?? '')
+        );
     }
 
-    public function setId(int $id): self
+    /**
+     * Check if user is an admin
+     */
+    public function isAdmin(): bool
     {
-        $this->id = $id;
-        return $this;
+        return $this->role === 'admin';
     }
 
-    public function getEmail(): string
+    /**
+     * Check if user is at least 16 years old
+     */
+    public function isAtLeast16(): bool
     {
-        return $this->email;
+        $birthDate = new \DateTime($this->dateOfBirth);
+        $today = new \DateTime();
+        $age = $today->diff($birthDate)->y;
+        return $age >= 16;
     }
 
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-        return $this;
-    }
-
-    public function getPassword(): string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): self
-    {
-        $this->password = password_hash($password, PASSWORD_BCRYPT);
-        return $this;
-    }
-
-    public function verifyPassword(string $password): bool
-    {
-        return password_verify($password, $this->password);
-    }
-
-    public function getFirstName(): string
-    {
-        return $this->firstName;
-    }
-
-    public function setFirstName(string $firstName): self
-    {
-        $this->firstName = $firstName;
-        return $this;
-    }
-
-    public function getLastName(): string
-    {
-        return $this->lastName;
-    }
-
-    public function setLastName(string $lastName): self
-    {
-        $this->lastName = $lastName;
-        return $this;
-    }
-
+    /**
+     * Get user's age
+     */
     public function getAge(): int
     {
-        return $this->age;
-    }
-
-    public function setAge(int $age): self
-    {
-        $this->age = $age;
-        return $this;
-    }
-
-    public function getLanguage(): string
-    {
-        return $this->language;
-    }
-
-    public function setLanguage(string $language): self
-    {
-        $this->language = $language;
-        return $this;
-    }
-
-    public function isTwoFactorEnabled(): bool
-    {
-        return $this->twoFactorEnabled;
-    }
-
-    public function setTwoFactorEnabled(bool $twoFactorEnabled): self
-    {
-        $this->twoFactorEnabled = $twoFactorEnabled;
-        return $this;
+        $birthDate = new \DateTime($this->dateOfBirth);
+        $today = new \DateTime();
+        return $today->diff($birthDate)->y;
     }
 }

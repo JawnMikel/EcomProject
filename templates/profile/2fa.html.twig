@@ -1,0 +1,56 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('profile.2fa') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('profile.2fa') }}</h1>
+    </div>
+</div>
+
+<div class="card" style="max-width: 500px;">
+    {% if user.twoFactorEnabled %}
+    <div class="card-header">{{ i18n.trans('auth.2fa_enabled') }}</div>
+    
+    <p class="mb-3">{{ i18n.trans('auth.2fa_currently_enabled') }}</p>
+    
+    <form method="POST" action="{{ path('profile.2fa.disable') }}">
+        <div class="form-group">
+            <label>{{ i18n.trans('auth.password') }}</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
+        
+        <button type="submit" class="btn btn-danger">
+            {{ i18n.trans('auth.2fa_disable') }}
+        </button>
+    </form>
+    {% else %}
+    <div class="card-header">{{ i18n.trans('auth.2fa_setup') }}</div>
+    
+    <p class="mb-3">{{ i18n.trans('auth.2fa_scan_qr') }}</p>
+    
+    {% if qrCodeUrl %}
+    <div class="text-center mb-3">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ qrCodeUrl|url_encode }}" 
+             alt="2FA QR Code" 
+             style="border: 1px solid var(--border-color); padding: 10px; border-radius: 8px;">
+    </div>
+    {% endif %}
+    
+    <form method="POST" action="{{ path('profile.2fa.enable') }}">
+        <div class="form-group">
+            <label>{{ i18n.trans('auth.2fa_code') }}</label>
+            <input type="text" name="code" class="form-control text-center" 
+                   required maxlength="6" pattern="[0-9]{6}" 
+                   placeholder="000000" 
+                   style="font-size: 24px; letter-spacing: 8px;">
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            {{ i18n.trans('auth.2fa_verify') }}
+        </button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

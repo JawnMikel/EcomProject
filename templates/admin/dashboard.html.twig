@@ -1,0 +1,43 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('admin.title') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('admin.title') }}</h1>
+    </div>
+</div>
+
+<div class="grid grid-3 mb-4">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.users|default(0) }}</div>
+        <div class="stat-label">{{ i18n.trans('admin.users') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.exercises|default(0) }}</div>
+        <div class="stat-label">{{ i18n.trans('admin.exercises') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.sessions|default(0) }}</div>
+        <div class="stat-label">{{ i18n.trans('workout.title') }}</div>
+    </div>
+</div>
+
+<div class="grid grid-3">
+    <a href="{{ path('admin.exercises') }}" class="card" style="text-decoration: none; color: inherit;">
+        <div class="card-header">{{ i18n.trans('admin.exercises') }}</div>
+        <p>Manage exercise library</p>
+    </a>
+    
+    <a href="{{ path('admin.categories') }}" class="card" style="text-decoration: none; color: inherit;">
+        <div class="card-header">{{ i18n.trans('admin.categories') }}</div>
+        <p>Manage muscle group categories</p>
+    </a>
+    
+    <div class="card">
+        <div class="card-header">{{ i18n.trans('admin.programs') }}</div>
+        <p>Coming soon...</p>
+    </div>
+</div>
+{% endblock %}

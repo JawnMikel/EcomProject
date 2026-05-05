@@ -1,0 +1,46 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ program.getName(locale) }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ program.getName(locale) }}</h1>
+        {% if program.getDescription(locale) %}
+        <p class="subtitle">{{ program.getDescription(locale) }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">{{ i18n.trans('programs.workouts') }}</div>
+    
+    {% if workouts is empty %}
+    <p>{{ i18n.trans('programs.no_workouts') }}</p>
+    {% else %}
+    <div class="grid grid-2">
+        {% for workout in workouts %}
+        <div class="card" style="border: 1px solid var(--border-color);">
+            <h3 style="font-size: 16px; margin-bottom: 8px;">
+                {{ i18n.trans('programs.day') }} {{ workout.dayOrder }}: {{ workout.getName(locale) }}
+            </h3>
+            
+            {% if workout.getDescription(locale) %}
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">
+                {{ workout.getDescription(locale) }}
+            </p>
+            {% endif %}
+            
+            <a href="{{ path('workouts.start', {program_workout: workout.id}) }}" class="btn btn-primary">
+                {{ i18n.trans('workout.start_session') }}
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<a href="{{ path('programs') }}" class="btn btn-outline">
+    ← {{ i18n.trans('general.back') }}
+</a>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('auth.2fa_title') }}{% endblock %}
+
+{% block content %}
+<div class="flex flex-center mt-4">
+    <div class="card" style="max-width: 400px; width: 100%;">
+        <div class="card-header text-center">{{ i18n.trans('auth.2fa_title') }}</div>
+
+        <p class="text-center mb-3" style="color: var(--text-muted);">
+            Enter the 6-digit code from your authenticator app.
+        </p>
+
+        <form method="POST" action="{{ path('2fa') }}">
+            <div class="form-group">
+                <label for="code">{{ i18n.trans('auth.2fa_code') }}</label>
+                <input type="text" id="code" name="code" class="form-control text-center" 
+                       required maxlength="6" pattern="[0-9]{6}" 
+                       placeholder="000000" 
+                       style="font-size: 24px; letter-spacing: 8px;">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                {{ i18n.trans('auth.2fa_verify') }}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+</write_to_file>

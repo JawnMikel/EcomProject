@@ -1,0 +1,72 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('progress.title') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('progress.title') }}</h1>
+    </div>
+</div>
+
+<div class="grid grid-3 mb-4">
+    <div class="stat-card">
+        <div class="stat-value">{{ totalWorkouts|default(0) }}</div>
+        <div class="stat-label">{{ i18n.trans('progress.total_workouts') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ records|length|default(0) }}</div>
+        <div class="stat-label">{{ i18n.trans('progress.personal_records') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">--</div>
+        <div class="stat-label">{{ i18n.trans('progress.current_streak') }}</div>
+    </div>
+</div>
+
+{% if records is not empty %}
+<div class="card mb-4">
+    <div class="card-header">{{ i18n.trans('progress.personal_records') }}</div>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{{ i18n.trans('progress.exercise') }}</th>
+                <th>{{ i18n.trans('progress.record') }}</th>
+                <th>{{ i18n.trans('progress.date_achieved') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>Exercise #{{ record.exerciseId }}</td>
+                <td>{{ record.getRecordDisplay() }}</td>
+                <td>{{ record.getAchievedDate() }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card mb-4">
+    <p class="text-center">{{ i18n.trans('progress.no_records') }}</p>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header">{{ i18n.trans('progress.workout_calendar') }}</div>
+    
+    {% if workoutDates is not empty %}
+    <div class="workout-calendar">
+        <p>Workout dates (last 30 days):</p>
+        <div class="calendar-dates">
+            {% for date in workoutDates %}
+            <span class="workout-day">{{ date }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <p class="text-center">No workout data yet. Start logging your workouts!</p>
+    {% endif %}
+</div>
+{% endblock %}

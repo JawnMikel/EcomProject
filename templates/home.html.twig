@@ -1,0 +1,77 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ i18n.trans('app.welcome') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ i18n.trans('app.welcome') }}</h1>
+        <p class="subtitle">{{ i18n.trans('app.tagline') }}</p>
+    </div>
+</div>
+
+<div class="grid grid-3 mb-4">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_exercises|default(0) }}</div>
+        <div class="stat-label">{{ i18n.trans('exercises.title') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_programs|default(0) }}</div>
+        <div class="stat-label">{{ i18n.trans('programs.title') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_sessions|default(0) }}</div>
+        <div class="stat-label">{{ i18n.trans('workout.title') }}</div>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">{{ i18n.trans('nav.exercises') }}</div>
+        <p class="mb-3">{{ i18n.trans('exercises.description') }}</p>
+        <a href="{{ path('exercises') }}" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            {{ i18n.trans('nav.exercises') }}
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">{{ i18n.trans('nav.programs') }}</div>
+        <p class="mb-3">{{ i18n.trans('programs.description') }}</p>
+        <a href="{{ path('programs') }}" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            {{ i18n.trans('nav.programs') }}
+        </a>
+    </div>
+
+    {% if not isLoggedIn %}
+    <div class="card">
+        <div class="card-header">{{ i18n.trans('nav.login') }}</div>
+        <p class="mb-3">Sign in to track your workouts and progress.</p>
+        <div class="flex gap-2">
+            <a href="{{ path('login') }}" class="btn btn-primary">{{ i18n.trans('nav.login') }}</a>
+            <a href="{{ path('register') }}" class="btn btn-outline">{{ i18n.trans('nav.register') }}</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-header">{{ i18n.trans('workout.start_session') }}</div>
+        <p class="mb-3">Start a new workout session and track your progress.</p>
+        <a href="{{ path('workouts.start') }}" class="btn btn-success">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            {{ i18n.trans('workout.start_session') }}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if isLoggedIn %}
+<div class="card mt-4">
+    <div class="card-header">{{ i18n.trans('progress.workout_calendar') }}</div>
+    <div class="workout-calendar" id="workout-calendar">
+        <!-- Calendar will be rendered here -->
+        <p>{{ i18n.trans('progress.no_records') }}</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

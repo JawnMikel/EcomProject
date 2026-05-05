@@ -1,110 +1,155 @@
-/**
- * GAINZ Database Schema
- * MySQL/MariaDB schema for the fitness tracking application
- */
-
--- Create database
-CREATE DATABASE IF NOT EXISTS gainz;
-USE gainz;
+-- GAINZ Database Schema
+-- Personal Workout Tracking Platform
 
 -- Users table
-CREATE TABLE users (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
-    age INT NOT NULL CHECK (age >= 16),
-    language VARCHAR(5) DEFAULT 'en',
-    two_factor_enabled BOOLEAN DEFAULT FALSE,
+    password_hash VARCHAR(255) NOT NULL,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    date_of_birth DATE NOT NULL,
+    role VARCHAR(20) DEFAULT 'user' CHECK(role IN ('user', 'admin')),
+    two_factor_enabled BOOLEAN DEFAULT 0,
     two_factor_secret VARCHAR(255),
-    email_verified BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_email (email)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Categories table (muscle groups)
+CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name_en VARCHAR(100) NOT NULL,
+    name_fr VARCHAR(100) NOT NULL,
+    description_en TEXT,
+    description_fr TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Exercises table
-CREATE TABLE exercises (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    category VARCHAR(100) NOT NULL,
-    muscle_group VARCHAR(100) NOT NULL,
-    instructions TEXT,
+CREATE TABLE IF NOT EXISTS exercises (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_id INTEGER,
+    name_en VARCHAR(255) NOT NULL,
+    name_fr VARCHAR(255) NOT NULL,
+    description_en TEXT,
+    description_fr TEXT,
+    difficulty VARCHAR(20) DEFAULT 'beginner' CHECK(difficulty IN ('beginner', 'intermediate', 'advanced')),
+    equipment VARCHAR(255),
     image_url VARCHAR(500),
-    video_url VARCHAR(500),
-    difficulty INT DEFAULT 1 CHECK (difficulty BETWEEN 1 AND 5),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_category (category),
-    INDEX idx_muscle_group (muscle_group)
+    is_active BOOLEAN DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
 
--- Training Programs table
-CREATE TABLE training_programs (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    duration_weeks INT NOT NULL,
-    difficulty_level INT CHECK (difficulty_level BETWEEN 1 AND 5),
-    created_by INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (created_by) REFERENCES users(id),
-    INDEX idx_difficulty (difficulty_level)
+-- Training programs table
+CREATE TABLE IF NOT EXISTS training_programs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name_en VARCHAR(255) NOT NULL,
+    name_fr VARCHAR(255) NOT NULL,
+    description_en TEXT,
+    description_fr TEXT,
+    is_public BOOLEAN DEFAULT 0,
+    created_by INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Program Exercises (junction table)
-CREATE TABLE program_exercises (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    program_id INT NOT NULL,
-    exercise_id INT NOT NULL,
-    week INT NOT NULL,
-    day INT NOT NULL,
-    sets INT NOT NULL,
-    reps INT,
-    duration INT,
-    notes TEXT,
-    FOREIGN KEY (program_id) REFERENCES training_programs(id) ON DELETE CASCADE,
+-- Program workouts table (specific workout days in a program)
+CREATE TABLE IF NOT EXISTS program_workouts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    program_id INTEGER NOT NULL,
+    name_en VARCHAR(255) NOT NULL,
+    name_fr VARCHAR(255) NOT NULL,
+    day_order INTEGER NOT NULL,
+    description_en TEXT,
+    description_fr TEXT,
+    FOREIGN KEY (program_id) REFERENCES training_programs(id) ON DELETE CASCADE
+);
+
+-- Program workout exercises (exercises in each program workout)
+CREATE TABLE IF NOT EXISTS program_workout_exercises (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    program_workout_id INTEGER NOT NULL,
+    exercise_id INTEGER NOT NULL,
+    sets_target INTEGER DEFAULT 3,
+    reps_target INTEGER DEFAULT 10,
+    weight_target REAL,
+    rest_seconds INTEGER DEFAULT 60,
+    exercise_order INTEGER NOT NULL,
+    FOREIGN KEY (program_workout_id) REFERENCES program_workouts(id) ON DELETE CASCADE,
     FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
 );
 
--- Workouts table (logged workouts)
-CREATE TABLE workouts (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    date DATE NOT NULL,
-    name VARCHAR(255) NOT NULL,
+-- Workout sessions table (recorded training sessions)
+CREATE TABLE IF NOT EXISTS workout_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    program_workout_id INTEGER,
+    started_at DATETIME NOT NULL,
+    completed_at DATETIME,
+    duration_seconds INTEGER,
     notes TEXT,
-    duration INT NOT NULL,
-    bodyweight DECIMAL(5, 2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id),
-    INDEX idx_date (date)
+    FOREIGN KEY (program_workout_id) REFERENCES program_workouts(id) ON DELETE SET NULL
 );
 
--- Workout Exercises (exercises performed in a workout)
-CREATE TABLE workout_exercises (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    workout_id INT NOT NULL,
-    exercise_id INT NOT NULL,
-    sets JSON NOT NULL,
-    notes TEXT,
-    FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
+-- Workout session items (sets/reps data per session)
+CREATE TABLE IF NOT EXISTS workout_session_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    exercise_id INTEGER NOT NULL,
+    set_number INTEGER NOT NULL,
+    reps INTEGER NOT NULL,
+    weight REAL DEFAULT 0,
+    rest_seconds INTEGER,
+    completed BOOLEAN DEFAULT 1,
+    FOREIGN KEY (session_id) REFERENCES workout_sessions(id) ON DELETE CASCADE,
     FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
 );
 
--- User Analytics/Progress table
-CREATE TABLE user_analytics (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    date DATE NOT NULL,
-    bodyweight DECIMAL(5, 2),
-    total_workouts INT DEFAULT 0,
-    total_duration INT DEFAULT 0,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_date (user_id, date)
+-- Bodyweight entries table
+CREATE TABLE IF NOT EXISTS bodyweight_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    weight REAL NOT NULL,
+    unit VARCHAR(10) DEFAULT 'kg' CHECK(unit IN ('kg', 'lbs')),
+    recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- Personal records table
+CREATE TABLE IF NOT EXISTS personal_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    exercise_id INTEGER NOT NULL,
+    weight REAL NOT NULL,
+    reps INTEGER NOT NULL,
+    achieved_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
+);
+
+-- User programs table (user's custom or assigned programs)
+CREATE TABLE IF NOT EXISTS user_programs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    program_id INTEGER NOT NULL,
+    is_active BOOLEAN DEFAULT 1,
+    started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (program_id) REFERENCES training_programs(id) ON DELETE CASCADE
+);
+
+-- Indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_exercises_category ON exercises(category_id);
+CREATE INDEX IF NOT EXISTS idx_exercises_active ON exercises(is_active);
+CREATE INDEX IF NOT EXISTS idx_workout_sessions_user ON workout_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_workout_sessions_started ON workout_sessions(started_at);
+CREATE INDEX IF NOT EXISTS idx_session_items_session ON workout_session_items(session_id);
+CREATE INDEX IF NOT EXISTS idx_bodyweight_user ON bodyweight_entries(user_id);
+CREATE INDEX IF NOT EXISTS idx_bodyweight_recorded ON bodyweight_entries(recorded_at);
+CREATE INDEX IF NOT EXISTS idx_personal_records_user ON personal_records(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_programs_user ON user_programs(user_id);
