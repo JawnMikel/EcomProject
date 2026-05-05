@@ -36,7 +36,11 @@ class AuthController
         $email    = trim($data['email'] ?? '');
         $password = $data['password'] ?? '';
 
+        // Try email first, then fall back to username
         $user = $this->userModel->findByEmail($email);
+        if (!$user) {
+            $user = $this->userModel->findByUsername($email);
+        }
 
         if (!$user || !password_verify($password, $user['password_hash'])) {
             $_SESSION['flash_error'] = 'Invalid email or password.';
@@ -46,6 +50,10 @@ class AuthController
         $_SESSION['user_id']   = $user['id'];
         $_SESSION['username']  = $user['username'];
         $_SESSION['user_role'] = $user['role'];
+
+        if (empty($user['profile_completed'])) {
+            return $response->withHeader('Location', $this->basePath . '/onboarding')->withStatus(302);
+        }
 
         return $response->withHeader('Location', $this->basePath . '/dashboard')->withStatus(302);
     }
@@ -94,7 +102,7 @@ class AuthController
         $_SESSION['username']  = $username;
         $_SESSION['user_role'] = 'user';
 
-        return $response->withHeader('Location', $this->basePath . '/dashboard')->withStatus(302);
+        return $response->withHeader('Location', $this->basePath . '/onboarding')->withStatus(302);
     }
 
     public function logout(Request $request, Response $response): Response

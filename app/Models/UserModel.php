@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Core\BaseModel;
+
 class UserModel extends BaseModel
 {
     public function findByEmail(string $email): array|false
@@ -48,5 +50,34 @@ class UserModel extends BaseModel
         $stmt = $this->db->prepare('SELECT id FROM users WHERE username = ? LIMIT 1');
         $stmt->execute([$username]);
         return (bool) $stmt->fetch();
+    }
+
+    public function saveProfile(
+        int $userId,
+        int $height,
+        string $gender,
+        string $fitnessGoal,
+        string $activityLevel,
+        string $experienceLevel
+    ): void {
+        $stmt = $this->db->prepare(
+            'UPDATE users SET
+                profile_completed = 1,
+                height_cm = ?,
+                gender = ?,
+                fitness_goal = ?,
+                activity_level = ?,
+                experience_level = ?
+             WHERE id = ?'
+        );
+        $stmt->execute([$height, $gender, $fitnessGoal, $activityLevel, $experienceLevel, $userId]);
+    }
+
+    public function addBodyWeightEntry(int $userId, float $weight, string $entryDate): void
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO body_weight_entries (user_id, weight_value, entry_date) VALUES (?, ?, ?)'
+        );
+        $stmt->execute([$userId, $weight, $entryDate]);
     }
 }

@@ -1,8 +1,19 @@
 -- GAINZ Fitness App - Database Schema
 -- Run this in phpMyAdmin or MySQL CLI
+-- WARNING: This script drops and recreates everything. Back up your data first.
 
 CREATE DATABASE IF NOT EXISTS gainz CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE gainz;
+
+-- Drop existing tables in correct order (child tables first)
+DROP TABLE IF EXISTS workout_session_items;
+DROP TABLE IF EXISTS workout_sessions;
+DROP TABLE IF EXISTS program_workouts;
+DROP TABLE IF EXISTS training_programs;
+DROP TABLE IF EXISTS exercises;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS body_weight_entries;
+DROP TABLE IF EXISTS users;
 
 -- --------------------------------------------------------
 -- Users
@@ -16,6 +27,12 @@ CREATE TABLE users (
     two_factor_secret  VARCHAR(64)  DEFAULT NULL,
     birth_date       DATE         NOT NULL,
     role             ENUM('user','admin') NOT NULL DEFAULT 'user',
+    profile_completed TINYINT(1)  NOT NULL DEFAULT 0,
+    height_cm        INT          DEFAULT NULL,
+    gender           ENUM('male','female','other','prefer_not_to_say') DEFAULT NULL,
+    fitness_goal     ENUM('lose_weight','maintain','build_muscle','increase_endurance') DEFAULT NULL,
+    activity_level   ENUM('sedentary','lightly_active','moderately_active','very_active','extremely_active') DEFAULT NULL,
+    experience_level ENUM('beginner','intermediate','advanced') DEFAULT NULL,
     created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
