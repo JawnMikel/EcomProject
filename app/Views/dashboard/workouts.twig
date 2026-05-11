@@ -1,0 +1,77 @@
+{% extends "layout/base.twig" %}
+
+{% block title %}Workout Sessions — GAINZ{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold">Workout Sessions</h1>
+        <p class="text-muted">Log today’s workout and review your recent sessions.</p>
+    </div>
+</div>
+
+{% if success %}
+<div class="alert alert-success">{{ success }}</div>
+{% endif %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Log New Session</h5>
+                <form action="/EcomProject/public/workouts" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Session Date</label>
+                        <input type="date" class="form-control" name="session_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Duration (minutes)</label>
+                        <input type="number" class="form-control" name="duration_minutes" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total Volume (kg)</label>
+                        <input type="number" step="0.1" class="form-control" name="total_volume" placeholder="Optional">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="notes" rows="3" placeholder="Short session notes"></textarea>
+                    </div>
+                    <button class="btn btn-dark">Save Session</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Recent Sessions</h5>
+                {% if sessions %}
+                <div class="list-group">
+                    {% for session in sessions %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ session.session_date }}</strong>
+                                <div class="text-muted">Duration {{ (session.total_duration / 60) | round(0, 'floor') }} min</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-secondary">{{ session.total_volume ? session.total_volume ~ ' kg' : 'No volume' }}</span>
+                            </div>
+                        </div>
+                        {% if session.notes %}
+                        <p class="mb-0 mt-2 small text-muted">{{ session.notes }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No workouts logged yet. Add your first session.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

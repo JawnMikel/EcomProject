@@ -37,9 +37,12 @@ class AuthController
         $password = $data['password'] ?? '';
 
         $user = $this->userModel->findByEmail($email);
+        if (!$user) {
+            $user = $this->userModel->findByUsername($email);
+        }
 
         if (!$user || !password_verify($password, $user['password_hash'])) {
-            $_SESSION['flash_error'] = 'Invalid email or password.';
+            $_SESSION['flash_error'] = 'Invalid credentials. Please check your email/username and password.';
             return $response->withHeader('Location', $this->basePath . '/login')->withStatus(302);
         }
 
