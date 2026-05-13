@@ -3,74 +3,85 @@
 {% block title %}Workout Sessions — GAINZ{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 fw-bold">Workout Sessions</h1>
-        <p class="text-muted">Log today’s workout and review your recent sessions.</p>
-    </div>
+<div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
+
+<div class="section-header">
+    <h1 class="section-title">Workout Sessions</h1>
+    <p class="section-subtitle">Log today's workout and review your recent sessions.</p>
+    <div class="section-title-bar"></div>
 </div>
 
 {% if success %}
-<div class="alert alert-success">{{ success }}</div>
+<div class="alert-gainz">
+    <i class="bi bi-check-circle me-1"></i>{{ success }}
+</div>
 {% endif %}
 {% if error %}
-<div class="alert alert-danger">{{ error }}</div>
+<div class="alert-gainz alert-gainz-error">
+    <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+</div>
 {% endif %}
 
 <div class="row g-4">
     <div class="col-lg-6">
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Log New Session</h5>
-                <form action="/EcomProject/public/workouts" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Session Date</label>
-                        <input type="date" class="form-control" name="session_date" required>
+        <div class="panel-card mb-4">
+            <h5 class="panel-card-title">
+                <i class="bi bi-plus-circle"></i> Log New Session
+            </h5>
+            <form action="/EcomProject/public/workouts" method="POST">
+                <div>
+                    <label class="field-label" for="session_date">Session Date</label>
+                    <div class="field-wrap">
+                        <input type="date" id="session_date" name="session_date" class="auth-input" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Duration (minutes)</label>
-                        <input type="number" class="form-control" name="duration_minutes" min="1" required>
+                </div>
+                <div>
+                    <label class="field-label" for="duration_minutes">Duration (minutes)</label>
+                    <div class="field-wrap">
+                        <input type="number" id="duration_minutes" name="duration_minutes" class="auth-input" min="1" placeholder="Duration in minutes" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Total Volume (kg)</label>
-                        <input type="number" step="0.1" class="form-control" name="total_volume" placeholder="Optional">
+                </div>
+                <div>
+                    <label class="field-label" for="total_volume">Total Volume (kg)</label>
+                    <div class="field-wrap">
+                        <input type="number" id="total_volume" name="total_volume" class="auth-input" step="0.1" placeholder="Optional">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-control" name="notes" rows="3" placeholder="Short session notes"></textarea>
+                </div>
+                <div>
+                    <label class="field-label" for="notes">Notes</label>
+                    <div class="field-wrap">
+                        <textarea id="notes" name="notes" class="auth-input" rows="3" placeholder="Short session notes"></textarea>
                     </div>
-                    <button class="btn btn-dark">Save Session</button>
-                </form>
-            </div>
+                </div>
+                <button type="submit" class="btn-gainz">Save Session</button>
+            </form>
         </div>
     </div>
     <div class="col-lg-6">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Recent Sessions</h5>
-                {% if sessions %}
-                <div class="list-group">
-                    {% for session in sessions %}
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ session.session_date }}</strong>
-                                <div class="text-muted">Duration {{ (session.total_duration / 60) | round(0, 'floor') }} min</div>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-secondary">{{ session.total_volume ? session.total_volume ~ ' kg' : 'No volume' }}</span>
-                            </div>
-                        </div>
-                        {% if session.notes %}
-                        <p class="mb-0 mt-2 small text-muted">{{ session.notes }}</p>
-                        {% endif %}
+        <div class="panel-card">
+            <h5 class="panel-card-title">
+                <i class="bi bi-clock-history"></i> Recent Sessions
+            </h5>
+            {% if sessions %}
+            <div>
+                {% for session in sessions %}
+                <div class="gainz-list-item">
+                    <div>
+                        <div class="gainz-list-title">{{ session.session_date }}</div>
+                        <div class="gainz-list-sub">Duration {{ (session.total_duration / 60) | round(0, 'floor') }} min</div>
                     </div>
-                    {% endfor %}
+                    <div class="text-end">
+                        <span class="gainz-list-meta">{{ session.total_volume ? session.total_volume ~ ' kg' : 'No volume' }}</span>
+                    </div>
                 </div>
-                {% else %}
-                <p class="text-muted">No workouts logged yet. Add your first session.</p>
+                {% if session.notes %}
+                <p class="mb-0 text-muted" style="padding: 0.5rem 0; font-size: 0.75rem;">{{ session.notes }}</p>
                 {% endif %}
+                {% endfor %}
             </div>
+            {% else %}
+            <p class="text-muted mb-0">No workouts logged yet. Add your first session.</p>
+            {% endif %}
         </div>
     </div>
 </div>
