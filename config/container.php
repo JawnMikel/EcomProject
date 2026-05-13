@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Database;
+use App\Services\TwoFactorService;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Slim\Views\Twig;
@@ -31,5 +32,8 @@ return function (ContainerBuilder $builder) {
             return $twig;
         },
 
+        TwoFactorService::class => fn(ContainerInterface $c) => new TwoFactorService($c->get(PDO::class)),
+
     ]);
 };
+
