@@ -1,0 +1,273 @@
+{% extends "layout/base.twig" %}
+
+{% block title %}Calendar — GAINZ{% endblock %}
+
+{% block content %}
+<div class="watermark"><i class="bi bi-calendar3"></i></div>
+
+<div class="section-header">
+    <h1 class="section-title">Workout Calendar</h1>
+    <p class="section-subtitle">Your training schedule</p>
+    <div class="section-title-bar"></div>
+</div>
+
+{% set monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
+{% set dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] %}
+
+<!-- Calendar Navigation -->
+<div class="calendar-nav">
+    <a href="/EcomProject/public/calendar?year={{ month > 1 ? year : year - 1 }}&month={{ month > 1 ? month - 1 : 12 }}" class="nav-arrow">
+        <i class="bi bi-chevron-left"></i>
+    </a>
+    <h2 class="calendar-month">{{ monthNames[month - 1] }} {{ year }}</h2>
+    <a href="/EcomProject/public/calendar?year={{ month < 12 ? year : year + 1 }}&month={{ month < 12 ? month + 1 : 1 }}" class="nav-arrow">
+        <i class="bi bi-chevron-right"></i>
+    </a>
+</div>
+
+<!-- Calendar Grid -->
+<div class="calendar-grid">
+    {% for day in dayNames %}
+    <div class="calendar-header-cell">{{ day }}</div>
+    {% endfor %}
+
+    {% set firstDayOfMonth = year ~ '-' ~ (month < 10 ? '0' ~ month : month) ~ '-01' %}
+    {% set startPadding = firstDayOfMonth|date('w') %}
+    {% set daysInMonth = (year ~ '-' ~ (month < 10 ? '0' ~ month : month) ~ '-01')|date('t') %}
+
+    {# Empty cells before first day #}
+    {% for i in 0..(startPadding - 1) %}
+    <div class="calendar-cell empty"></div>
+    {% endfor %}
+
+    {# Day cells #}
+    {% set workoutDates = {} %}
+    {% for w in workouts %}
+        {% set workoutDates = workoutDates|merge({(w.start_time|date('Y-m-d')): w}) %}
+    {% endfor %}
+
+    {% for day in 1..daysInMonth %}
+        {% set currentDate = year ~ '-' ~ (month < 10 ? '0' ~ month : month) ~ '-' ~ (day < 10 ? '0' ~ day : day) %}
+        {% set hasWorkout = workoutDates[currentDate] is defined %}
+        <div class="calendar-cell {% if hasWorkout %}has-workout{% endif %}">
+            <span class="day-number">{{ day }}</span>
+            {% if hasWorkout %}
+            <div class="workout-indicator">
+                <i class="bi bi-check-circle-fill"></i>
+                <span class="workout-time">{{ workoutDates[currentDate].start_time|date('g:i a') }}</span>
+            </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Workout List -->
+{% if workouts %}
+<div class="panel-card workout-list-panel">
+    <h5 class="panel-card-title">
+        <i class="bi bi-list-check"></i> Workouts This Month
+    </h5>
+    <div class="workout-list">
+        {% for session in workouts %}
+        <div class="workout-list-item">
+            <div class="workout-date-block">
+                <span class="month-day">{{ session.start_time|date('j') }}</span>
+                <span class="month-name">{{ session.start_time|date('M') }}</span>
+            </div>
+            <div class="workout-info">
+                <div class="workout-time-label">{{ session.start_time|date('l') }} at {{ session.start_time|date('g:i a') }}</div>
+                <div class="workout-stats">
+                    <span><i class="bi bi-clock"></i> {{ (session.total_duration / 60)|round(0) }} min</span>
+                    <span><i class="bi bi-speedometer2"></i> {{ session.total_volume ? session.total_volume ~ ' lbs' : '—' }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<p class="empty-state">No workouts this month. Time to train!</p>
+{% endif %}
+
+<style>
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.calendar-month {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 280px;
+    text-align: center;
+}
+
+.nav-arrow {
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.nav-arrow:hover {
+    color: var(--accent);
+    transform: scale(1.1);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 2rem;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.calendar-header-cell {
+    text-align: center;
+    padding: 0.75rem;
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.calendar-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    transition: all 0.2s;
+}
+
+.calendar-cell.empty {
+    background: transparent;
+    border: none;
+}
+
+.calendar-cell:not(.empty):hover {
+    border-color: var(--accent);
+}
+
+.calendar-cell.has-workout {
+    background: linear-gradient(135deg, rgba(200, 255, 0, 0.15), rgba(200, 255, 0, 0.05));
+    border-color: var(--accent);
+}
+
+.day-number {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.calendar-cell.has-workout .day-number {
+    color: var(--accent);
+}
+
+.workout-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 0.25rem;
+}
+
+.workout-indicator i {
+    font-size: 0.8rem;
+    color: var(--accent);
+}
+
+.workout-time {
+    font-size: 0.55rem;
+    color: #666;
+    margin-top: 0.15rem;
+}
+
+.workout-list-panel {
+    margin-top: 1rem;
+}
+
+.workout-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.workout-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: border-color 0.2s;
+}
+
+.workout-list-item:hover {
+    border-color: var(--accent);
+}
+
+.workout-date-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 50px;
+    padding-right: 1rem;
+    border-right: 1px solid var(--border);
+}
+
+.month-day {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.month-name {
+    font-size: 0.65rem;
+    color: #555;
+    text-transform: uppercase;
+}
+
+.workout-info {
+    flex: 1;
+}
+
+.workout-time-label {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-bottom: 0.35rem;
+}
+
+.workout-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.workout-stats span {
+    font-size: 0.75rem;
+    color: #555;
+}
+
+.workout-stats i {
+    margin-right: 0.35rem;
+    color: #444;
+}
+
+.empty-state {
+    text-align: center;
+    color: #444;
+    padding: 2rem;
+}
+</style>
+{% endblock %}

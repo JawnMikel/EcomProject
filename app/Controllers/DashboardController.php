@@ -105,4 +105,27 @@ class DashboardController
 
         return $streak;
     }
+
+    public function calendar(Request $request, Response $response): Response
+    {
+        if (empty($_SESSION['user_id'])) {
+            return $response->withHeader('Location', '/EcomProject/public/login')->withStatus(302);
+        }
+
+        $userId = (int) $_SESSION['user_id'];
+        $params = $request->getQueryParams();
+        $year = isset($params['year']) ? (int) $params['year'] : (int) date('Y');
+        $month = isset($params['month']) ? (int) $params['month'] : (int) date('m');
+
+        $workouts = $this->sessionModel->getByMonth($userId, $year, $month);
+
+        return $this->view->render($response, 'dashboard/calendar.twig', [
+            'username' => $_SESSION['username'],
+            'role'     => $_SESSION['user_role'],
+            'title'    => 'Workout Calendar',
+            'workouts' => $workouts,
+            'year'     => $year,
+            'month'    => $month,
+        ]);
+    }
 }

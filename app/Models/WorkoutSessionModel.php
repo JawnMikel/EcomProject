@@ -129,6 +129,12 @@ class WorkoutSessionModel extends BaseModel
         return $stmt->execute([$setId]);
     }
 
+    public function updateSet(int $setId, string $field, mixed $value): bool
+    {
+        $stmt = $this->db->prepare("UPDATE workout_session_items SET $field = ? WHERE id = ?");
+        return $stmt->execute([$value, $setId]);
+    }
+
     public function getStatsForUser(int $userId): array
     {
         $stmt = $this->db->prepare(
@@ -146,5 +152,17 @@ class WorkoutSessionModel extends BaseModel
             'total_duration_seconds' => (int) $stats['total_duration_seconds'],
             'average_volume' => (float) $stats['average_volume'],
         ];
+    }
+
+    public function getByMonth(int $userId, int $year, int $month): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, start_time, total_duration, total_volume, notes
+             FROM workout_sessions
+             WHERE user_id = ? AND YEAR(start_time) = ? AND MONTH(start_time) = ?
+             ORDER BY start_time'
+        );
+        $stmt->execute([$userId, $year, $month]);
+        return $stmt->fetchAll();
     }
 }

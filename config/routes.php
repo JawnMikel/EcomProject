@@ -27,6 +27,7 @@ return function (App $app) {
     $app->group('', function (RouteCollectorProxy $group) {
         $group->get('/',               [DashboardController::class, 'index'])->setName('dashboard');
         $group->get('/dashboard',      [DashboardController::class, 'index']);
+        $group->get('/calendar',       [DashboardController::class, 'calendar'])->setName('calendar');
         $group->get('/workouts',       [WorkoutController::class, 'index'])->setName('workouts.index');
         $group->post('/workouts',      [WorkoutController::class, 'create'])->setName('workouts.create');
         $group->post('/workouts/start', [WorkoutController::class, 'start'])->setName('workouts.start');
@@ -34,6 +35,7 @@ return function (App $app) {
         $group->post('/workouts/add-exercise', [WorkoutController::class, 'addExercise'])->setName('workouts.addExercise');
         $group->post('/workouts/add-set', [WorkoutController::class, 'addSet'])->setName('workouts.addSet');
         $group->post('/workouts/delete-set', [WorkoutController::class, 'deleteSet'])->setName('workouts.deleteSet');
+        $group->post('/workouts/update-set', [WorkoutController::class, 'updateSet'])->setName('workouts.updateSet');
         $group->post('/workouts/complete', [WorkoutController::class, 'complete'])->setName('workouts.complete');
         $group->get('/programs',       [ProgramController::class, 'index'])->setName('programs.index');
         $group->post('/programs',      [ProgramController::class, 'create'])->setName('programs.create');

@@ -28,64 +28,96 @@
                 {% for exerciseId, data in exercise_details %}
                 <div class="exercise-item mb-3">
                     <div class="exercise-header">
-                        <div>
+                        <div class="exercise-title-row">
                             <h6 class="exercise-name">{{ data.info.name }}</h6>
                             <span class="badge-difficulty badge-{{ data.info.difficulty }}">{{ data.info.difficulty }}</span>
                         </div>
+                        <div class="rest-setting">
+                            <label>Rest:</label>
+                            <select class="rest-select" onchange="saveRestTime({{ exerciseId }}, this.value)">
+                                <option value="30" {% if data.info.rest_time|default(60) == 30 %}selected{% endif %}>30s</option>
+                                <option value="60" {% if data.info.rest_time|default(60) == 60 %}selected{% endif %}>60s</option>
+                                <option value="90" {% if data.info.rest_time|default(60) == 90 %}selected{% endif %}>90s</option>
+                                <option value="120" {% if data.info.rest_time|default(60) == 120 %}selected{% endif %}>2m</option>
+                                <option value="180" {% if data.info.rest_time|default(60) == 180 %}selected{% endif %}>3m</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <table class="sets-table">
-                        <thead>
-                            <tr>
-                                <th>Set</th>
-                                <th>Reps</th>
-                                <th>Weight (kg)</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for set in data.sets %}
-                            <tr>
-                                <td>{{ set.set_number }}</td>
-                                <td>{{ set.reps }}</td>
-                                <td>{{ set.weight }}</td>
-                                <td>
-                                    <form method="POST" action="/EcomProject/public/workouts/delete-set" style="display:inline;">
-                                        <input type="hidden" name="set_id" value="{{ set.id }}">
-                                        <button type="submit" class="btn-delete-set" title="Delete set">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="sets-list">
+                        <!-- Column Headers -->
+                        <div class="sets-header-row">
+                            <div class="col-set">SET</div>
+                            <div class="col-weight"><i class="bi bi-dumbbell"></i> LBS</div>
+                            <div class="col-reps">REPS</div>
+                            <div class="col-actions"><i class="bi bi-check-lg"></i></div>
+                        </div>
 
-                    <form method="POST" action="/EcomProject/public/workouts/add-set" class="add-set-form mt-2">
-                        <input type="hidden" name="exercise_id" value="{{ exerciseId }}">
-                        <div class="row g-2 align-items-center">
-                            <div class="col-auto">
-                                <input type="number" name="reps" class="auth-input" placeholder="Reps" min="1" required style="width: 80px;">
+                        {% for set in data.sets %}
+                        <div class="set-row {% if set.completed|default(false) %}set-completed{% endif %}">
+                            <div class="col-set set-number">{{ set.set_number }}</div>
+                            <div class="col-weight">
+                                <input type="number" class="set-input" value="{{ set.weight }}" step="0.5" min="0" onchange="updateSet({{ set.id }}, 'weight', this.value)">
                             </div>
-                            <div class="col-auto">
-                                <input type="number" name="weight" class="auth-input" placeholder="kg" step="0.5" min="0" style="width: 80px;">
+                            <div class="col-reps">
+                                <input type="number" class="set-input" value="{{ set.reps }}" min="0" onchange="updateSet({{ set.id }}, 'reps', this.value)">
                             </div>
-                            <div class="col-auto">
-                                <button type="submit" class="btn-gainz btn-sm">
-                                    <i class="bi bi-plus"></i> Add
+                            <div class="col-actions">
+                                <button type="button" class="btn-done {% if set.completed|default(false) %}done{% endif %}" onclick="markSetDone({{ set.id }}, {{ exerciseId }})">
+                                    <i class="bi {% if set.completed|default(false) %}bi-check-square-fill{% else %}bi-square{% endif %}"></i>
                                 </button>
+                                <form method="POST" action="/EcomProject/public/workouts/delete-set" style="display:inline;">
+                                    <input type="hidden" name="set_id" value="{{ set.id }}">
+                                    <button type="submit" class="btn-delete-set" title="Delete set">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                    </form>
+                        {% endfor %}
+
+                        <!-- Add Set Button -->
+                        <form method="POST" action="/EcomProject/public/workouts/add-set" class="add-set-btn-row">
+                            <input type="hidden" name="exercise_id" value="{{ exerciseId }}">
+                            <input type="number" name="reps" class="add-set-input" placeholder="Reps" min="1" required>
+                            <input type="number" name="weight" class="add-set-input" placeholder="lbs" step="0.5" min="0">
+                            <button type="submit" class="btn-add-set-simple">
+                                <i class="bi bi-plus-lg"></i> Add Set
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
 
-            <button class="btn-gainz mt-2" data-bs-toggle="modal" data-bs-target="#addExerciseModal">
+            <button class="btn-gainz mt-2" onclick="toggleExercisePanel()">
                 <i class="bi bi-plus-circle"></i> Add Exercise
             </button>
+        </div>
+    </div>
+
+    <!-- Exercise Picker Panel -->
+    <div id="exercisePickerOverlay" class="exercise-picker-panel overlay" style="display: none;" onclick="toggleExercisePanel()"></div>
+    <div id="exercisePickerPanel" class="exercise-picker-panel" style="display: none;">
+        <div class="panel-header">
+            <h5>Select Exercise</h5>
+            <button type="button" onclick="toggleExercisePanel()" class="btn-close btn-close-white"></button>
+        </div>
+        <div class="panel-body">
+            {% if all_exercises %}
+            <input type="text" id="exerciseSearch" class="auth-input w-100 mb-3" placeholder="Search exercises...">
+            <div class="exercise-grid" id="exerciseGrid">
+                {% for exercise in all_exercises %}
+                <button type="button" class="exercise-select-btn" onclick="addExercise({{ exercise.id }})">
+                    <span class="exercise-select-name">{{ exercise.name }}</span>
+                    <span class="exercise-select-category">{{ exercise.category_name }}</span>
+                </button>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">No exercises available.</p>
+            {% endif %}
         </div>
     </div>
 
@@ -124,7 +156,7 @@
                 <button type="button" class="rest-btn-chip" onclick="startRestTimer(120)">2m</button>
             </div>
 
-            <form method="POST" action="/EcomProject/public/workouts/complete" class="finish-bar">
+            <form method="POST" action="/EcomProject/public/workouts/complete" class="finish-bar" onsubmit="localStorage.removeItem('exerciseRestTimes');">
                 <button type="submit" class="btn-finish">
                     <i class="bi bi-check-lg"></i> Finish Workout
                 </button>
@@ -134,37 +166,57 @@
     </div>
 </div>
 
-<!-- Add Exercise Modal - Using Form Select -->
-<div class="modal fade" id="addExerciseModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content modal-dark">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Exercise</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                {% if all_exercises %}
-                <form method="POST" action="/EcomProject/public/workouts/add-exercise">
-                    <div class="mb-3">
-                        <label class="field-label">Select Exercise</label>
-                        <select name="exercise_id" class="auth-input" required>
-                            <option value="">-- Choose an exercise --</option>
-                            {% for exercise in all_exercises %}
-                            <option value="{{ exercise.id }}">{{ exercise.name }} ({{ exercise.category_name }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-gainz w-100">
-                        <i class="bi bi-plus-circle"></i> Add Exercise
-                    </button>
-                </form>
-                {% else %}
-                <p class="text-muted">No exercises available. Please add exercises first.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
+<form id="addExerciseForm" method="POST" action="/EcomProject/public/workouts/add-exercise" style="display: none;">
+    <input type="hidden" name="exercise_id" id="selectedExerciseId">
+</form>
+
+<script>
+function addExercise(exerciseId) {
+    document.getElementById('selectedExerciseId').value = exerciseId;
+    document.getElementById('addExerciseForm').submit();
+}
+
+function toggleExercisePanel() {
+    const panel = document.getElementById('exercisePickerPanel');
+    const overlay = document.getElementById('exercisePickerOverlay');
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'flex';
+        overlay.style.display = 'block';
+    } else {
+        panel.style.display = 'none';
+        overlay.style.display = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize rest select values from localStorage
+    document.querySelectorAll('.rest-select').forEach(function(select) {
+        const exerciseId = select.getAttribute('onchange').match(/\d+/)[0];
+        if (exerciseRestTimes[exerciseId]) {
+            select.value = exerciseRestTimes[exerciseId];
+        }
+    });
+
+    const searchInput = document.getElementById('exerciseSearch');
+    const exerciseGrid = document.getElementById('exerciseGrid');
+    const exerciseButtons = exerciseGrid ? exerciseGrid.querySelectorAll('.exercise-select-btn') : [];
+
+    if (searchInput && exerciseGrid) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            exerciseButtons.forEach(function(btn) {
+                const name = btn.querySelector('.exercise-select-name').textContent.toLowerCase();
+                const category = btn.querySelector('.exercise-select-category').textContent.toLowerCase();
+                if (name.includes(searchTerm) || category.includes(searchTerm)) {
+                    btn.style.display = 'flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
 
 <style>
 .compact-page {
@@ -413,6 +465,14 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.exercise-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .exercise-name {
@@ -420,7 +480,37 @@
     font-size: 1.1rem;
     font-weight: 600;
     margin: 0;
-    margin-right: 0.5rem;
+}
+
+.rest-setting {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.rest-setting label {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.rest-select {
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    position: relative;
+    z-index: 9999;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding-right: 1.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.4rem center;
 }
 
 .badge-difficulty {
@@ -434,23 +524,102 @@
 .badge-intermediate { background: #f59e0b; color: #000; }
 .badge-advanced { background: #ef4444; color: #fff; }
 
-.sets-table {
-    width: 100%;
-    font-size: 0.8rem;
+/* --- SETS LIST GRID LAYOUT --- */
+.sets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
 }
 
-.sets-table th {
+/* Base grid template */
+.sets-header-row,
+.set-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr 70px;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.sets-header-row {
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.6rem;
-    letter-spacing: 1px;
-    color: #666;
-    padding: 0.4rem;
     border-bottom: 1px solid var(--border);
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.2rem;
 }
 
-.sets-table td {
+.set-row {
+    background: #2a2a2a;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.set-row.set-completed {
+    opacity: 0.7;
+}
+
+.set-row.set-completed .set-input {
+    color: var(--accent);
+}
+
+/* --- COLUMN ALIGNMENTS --- */
+.col-set {
+    text-align: center;
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.col-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+/* --- INPUTS --- */
+.set-input {
+    width: 100%;
+    background: #151515;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
     padding: 0.4rem;
-    color: #ccc;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.set-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #1e1e1e;
+}
+
+/* --- ACTION BUTTONS --- */
+.btn-done {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    font-size: 1.3rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-done.done {
+    color: var(--accent);
+}
+
+.btn-done:hover {
+    color: var(--accent);
 }
 
 .btn-delete-set {
@@ -458,11 +627,57 @@
     border: none;
     color: #666;
     cursor: pointer;
-    padding: 0.25rem;
+    padding: 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-delete-set:hover {
     color: #ef4444;
+}
+
+/* Add Set Button */
+.add-set-btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.add-set-input {
+    width: 70px;
+    padding: 0.5rem;
+    background: #151515;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.add-set-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.btn-add-set-simple {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-set-simple:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(200, 255, 0, 0.3);
 }
 
 .add-set-form .auth-input {
@@ -489,63 +704,51 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
     padding-right: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
-.exercise-select-btn {
-    display: flex !important;
-    flex-direction: column;
-    background: var(--panel-bg) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 6px;
-    padding: 0.6rem;
-    text-align: left;
-    cursor: pointer !important;
-    transition: all 0.2s;
-    width: 100%;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    position: relative;
-    z-index: 1;
-    color: #fff !important;
+.modal-backdrop {
+    z-index: 1040;
 }
 
-button.exercise-select-btn {
-    -webkit-appearance: button !important;
-    appearance: button !important;
+.modal {
+    z-index: 1050;
 }
 
-button.exercise-select-btn:disabled {
-    opacity: 1 !important;
-    cursor: pointer !important;
-}
-
-.exercise-select-btn:hover {
-    border-color: var(--accent) !important;
-    background: rgba(255, 107, 53, 0.2) !important;
-}
-
-.exercise-select-btn:active {
-    background: var(--accent) !important;
-    border-color: var(--accent) !important;
-}
-
-.modal.show .modal-dialog {
-    pointer-events: none;
-}
-
-.modal.show .modal-dialog .modal-content {
+.modal-content {
     pointer-events: auto;
 }
 
-.modal-body {
-    pointer-events: auto !important;
-    z-index: 1050;
-    position: relative;
+.exercise-select-btn {
+    display: flex;
+    flex-direction: column;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    color: #fff;
 }
 
-.exercise-grid {
-    pointer-events: auto !important;
+button.exercise-select-btn {
+    -webkit-appearance: button;
+    appearance: button;
 }
+
+.exercise-select-btn:hover {
+    border-color: var(--accent);
+    background: rgba(255, 107, 53, 0.2);
+}
+
+.exercise-select-btn:active {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
 
 .exercise-select-name {
     display: block;
@@ -564,10 +767,154 @@ button.exercise-select-btn:disabled {
     padding: 0.35rem 0.6rem;
     font-size: 0.75rem;
 }
+
+.exercise-picker-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    max-width: 95vw;
+    max-height: 80vh;
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 500;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+#exercisePickerOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    z-index: 400;
+    pointer-events: auto;
+}
+
+#exercisePickerOverlay[style*="display: none"] {
+    pointer-events: none;
+}
+
+.exercise-picker-panel .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.exercise-picker-panel .panel-header h5 {
+    margin: 0;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+}
+
+.exercise-picker-panel .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
 </style>
 
 <script>
 let restInterval = null;
+let restSeconds = 60;
+
+// Store rest times per exercise
+const exerciseRestTimes = {};
+
+// Load saved rest times from localStorage
+const savedTimes = localStorage.getItem('exerciseRestTimes');
+if (savedTimes) {
+    Object.assign(exerciseRestTimes, JSON.parse(savedTimes));
+}
+
+function saveRestTime(exerciseId, seconds) {
+    exerciseRestTimes[exerciseId] = parseInt(seconds);
+    localStorage.setItem('exerciseRestTimes', JSON.stringify(exerciseRestTimes));
+}
+
+function updateSet(setId, field, value) {
+    fetch('/EcomProject/public/workouts/update-set', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'set_id=' + setId + '&field=' + field + '&value=' + value
+    });
+}
+
+function markSetDone(setId, exerciseId) {
+    const btn = event.currentTarget;
+    const row = btn.closest('.set-row');
+    const icon = btn.querySelector('i');
+
+    if (row.classList.contains('set-completed')) {
+        row.classList.remove('set-completed');
+        icon.className = 'bi bi-circle';
+        btn.classList.remove('done');
+    } else {
+        row.classList.add('set-completed');
+        icon.className = 'bi bi-check-circle-fill';
+        btn.classList.add('done');
+
+        // Use saved rest time for this exercise (default 60s)
+        const restTime = exerciseRestTimes[exerciseId] || 60;
+        startRestTimer(restTime);
+    }
+}
+
+function startRestTimer(seconds) {
+    stopRestTimer();
+    restSeconds = seconds;
+
+    const restBlock = document.getElementById('restBlock');
+    const countdown = document.getElementById('restCountdown');
+
+    restBlock.style.display = 'flex';
+
+    restInterval = setInterval(function() {
+        restSeconds--;
+        const mins = Math.floor(restSeconds / 60);
+        const secs = restSeconds % 60;
+        countdown.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+        if (restSeconds <= 0) {
+            stopRestTimer();
+            playBeep();
+            alert('Rest time is up! Ready for your next set.');
+        }
+    }, 1000);
+}
+
+function stopRestTimer() {
+    if (restInterval) {
+        clearInterval(restInterval);
+        restInterval = null;
+    }
+    document.getElementById('restBlock').style.display = 'none';
+}
+
+function playBeep() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.frequency.value = 880;
+        gainNode.gain.value = 0.3;
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.2);
+    } catch (e) {}
+}
+
 let timerRunning = false;
 let timerInterval = null;
 let customTimerRunning = false;
@@ -666,55 +1013,6 @@ function stopCustomTimer() {
         customTimerInterval = null;
     }
     customTimerRunning = false;
-    document.getElementById('restBlock').style.display = 'none';
-}
-
-function startRestTimer(seconds) {
-    stopRestTimer();
-    stopCustomTimer();
-
-    let remaining = seconds;
-    const restBlock = document.getElementById('restBlock');
-    const countdown = document.getElementById('restCountdown');
-
-    restBlock.style.display = 'flex';
-
-    // Update button states
-    document.querySelectorAll('.rest-btn-chip').forEach(function(btn) {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
-
-    restInterval = setInterval(function() {
-        remaining--;
-        const mins = Math.floor(remaining / 60);
-        const secs = remaining % 60;
-        countdown.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-
-        if (remaining <= 0) {
-            stopRestTimer();
-            // Play a beep sound
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.frequency.value = 880;
-                gainNode.gain.value = 0.3;
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.2);
-            } catch (e) {}
-            alert('Rest time is up! Ready for your next set.');
-        }
-    }, 1000);
-}
-
-function stopRestTimer() {
-    if (restInterval) {
-        clearInterval(restInterval);
-        restInterval = null;
-    }
     document.getElementById('restBlock').style.display = 'none';
 }
 

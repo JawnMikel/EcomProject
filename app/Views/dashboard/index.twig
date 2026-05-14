@@ -27,11 +27,11 @@
     </div>
     <div class="stat-box">
         <span class="stat-number">{{ (stats.total_volume / 1000)|round(1) }}k</span>
-        <span class="stat-label">Total Volume (kg)</span>
+        <span class="stat-label">Total Volume (lbs)</span>
     </div>
     <div class="stat-box">
         <span class="stat-number">{{ (stats.average_volume)|round(0) }}</span>
-        <span class="stat-label">Avg Volume (kg)</span>
+        <span class="stat-label">Avg Volume (lbs)</span>
     </div>
 </div>
 
@@ -72,7 +72,7 @@
                 <div class="activity-date">{{ session.session_date }}</div>
                 <div class="activity-details">
                     <span class="activity-duration">{{ (session.total_duration / 60)|round(0) }} min</span>
-                    <span class="activity-volume">{{ session.total_volume ? session.total_volume ~ ' kg' : '—' }}</span>
+                    <span class="activity-volume">{{ session.total_volume ? session.total_volume ~ ' lbs' : '—' }}</span>
                 </div>
             </div>
             {% endfor %}

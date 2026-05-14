@@ -246,6 +246,25 @@ class WorkoutController
         return $response->withHeader('Location', $this->basePath . '/workouts/active')->withStatus(302);
     }
 
+    public function updateSet(Request $request, Response $response): Response
+    {
+        $userId = $_SESSION['user_id'] ?? null;
+        if (!$userId) {
+            return $response->withStatus(401);
+        }
+
+        $data = (array) $request->getParsedBody();
+        $setId = (int) ($data['set_id'] ?? 0);
+        $field = $data['field'] ?? '';
+        $value = $data['value'] ?? '';
+
+        if ($setId > 0 && in_array($field, ['reps', 'weight'])) {
+            $this->workoutModel->updateSet($setId, $field, $value);
+        }
+
+        return $response->withStatus(200);
+    }
+
     public function complete(Request $request, Response $response): Response
     {
         $userId = $_SESSION['user_id'] ?? null;
