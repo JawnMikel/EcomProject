@@ -503,6 +503,109 @@ input[type="date"].auth-input {
     text-transform: uppercase;
 }
 
+/* === Workout Layout === */
+.workout-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 992px) {
+    .workout-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.workout-start-panel .panel-action {
+    background: linear-gradient(145deg, #151515 0%, #0f0f0f 100%);
+    border-left: 3px solid var(--accent);
+    padding: 2rem;
+}
+
+.workout-start-panel .panel-icon {
+    font-size: 3rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 15px rgba(200, 255, 0, 0.5));
+}
+
+.workout-start-panel .btn-gainz {
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+}
+
+.workout-list-panel .panel-card {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.workout-list-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.workout-list-panel::-webkit-scrollbar-track {
+    background: #0a0a0a;
+}
+
+.workout-list-panel::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 2px;
+}
+
+.workout-items {
+    margin-top: 0.5rem;
+}
+
+.workout-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #1a1a1a;
+    transition: all 0.15s;
+}
+
+.workout-item:last-child {
+    border-bottom: none;
+}
+
+.workout-item:hover {
+    background: rgba(200, 255, 0, 0.02);
+    margin: 0 -1rem;
+    padding: 1rem;
+}
+
+.workout-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.workout-item-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e8e8e8;
+}
+
+.workout-item-meta {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    color: #555;
+    text-transform: uppercase;
+}
+
+.workout-item-action .btn-sm {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.65rem;
+}
+
+.empty-state {
+    padding: 2.5rem 0;
+    text-align: center;
+    color: #444;
+}
+
 /* === Utility Classes === */
 .text-accent { color: var(--accent); }
 .text-muted { color: #555 !important; }

@@ -1,0 +1,228 @@
+{% extends "layout/base.twig" %}
+
+{% block title %}Profile — GAINZ{% endblock %}
+
+{% block content %}
+<div class="watermark"><i class="bi bi-person-circle"></i></div>
+
+<div class="section-header">
+    <h1 class="section-title">My Profile</h1>
+    <p class="section-subtitle">Manage your account and fitness information</p>
+    <div class="section-title-bar"></div>
+</div>
+
+{% if session.flash_success %}
+<div class="alert-gainz">
+    <i class="bi bi-check-circle me-1"></i>{{ session.flash_success }}
+</div>
+{% endif %}
+{% if session.flash_error %}
+<div class="alert-gainz alert-gainz-error">
+    <i class="bi bi-exclamation-triangle me-1"></i>{{ session.flash_error }}
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="panel-card mb-4">
+            <h5 class="panel-card-title">
+                <i class="bi bi-person-circle"></i> Profile Picture
+            </h5>
+            <div class="text-center mb-3">
+                {% if user.profile_picture %}
+                <img src="{{ user.profile_picture }}" alt="Profile Picture" class="profile-avatar" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent);">
+                {% else %}
+                <div class="profile-avatar-placeholder">
+                    <i class="bi bi-person-fill" style="font-size: 3rem; color: var(--accent);"></i>
+                </div>
+                {% endif %}
+            </div>
+            <form action="/EcomProject/public/profile" method="POST" class="profile-pic-form">
+                <input type="hidden" name="profile_picture" id="profile_picture_input" value="{{ user.profile_picture }}">
+                <div class="field-wrap">
+                    <label class="field-label" for="profile_picture">Profile Picture URL</label>
+                    <input type="url" id="profile_picture" name="profile_picture" class="auth-input"
+                           placeholder="https://example.com/my-photo.jpg"
+                           value="{{ user.profile_picture }}">
+                </div>
+            </form>
+        </div>
+
+        <div class="panel-card">
+            <h5 class="panel-card-title">
+                <i class="bi bi-diagram-3"></i> Account Info
+            </h5>
+            <div class="account-info">
+                <div class="info-row">
+                    <span class="info-label">Username</span>
+                    <span class="info-value">{{ user.username }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ user.email }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Member Since</span>
+                    <span class="info-value">{{ user.created_at }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Role</span>
+                    <span class="info-value text-uppercase">{{ user.role }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="panel-card">
+            <h5 class="panel-card-title">
+                <i class="bi bi-pencil-square"></i> Edit Profile
+            </h5>
+
+            <form action="/EcomProject/public/profile" method="POST">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="field-label" for="bio">Bio</label>
+                        <div class="field-wrap">
+                            <textarea id="bio" name="bio" class="auth-input" rows="3"
+                                      placeholder="Tell us about yourself and your fitness journey...">{{ user.bio }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="field-label" for="fitness_goal">Fitness Goal</label>
+                        <div class="field-wrap">
+                            <select id="fitness_goal" name="fitness_goal" class="auth-input">
+                                <option value="">Select a goal</option>
+                                <option value="Build Muscle" {{ user.fitness_goal == 'Build Muscle' ? 'selected' }}>Build Muscle</option>
+                                <option value="Lose Weight" {{ user.fitness_goal == 'Lose Weight' ? 'selected' }}>Lose Weight</option>
+                                <option value="Improve Strength" {{ user.fitness_goal == 'Improve Strength' ? 'selected' }}>Improve Strength</option>
+                                <option value="Increase Endurance" {{ user.fitness_goal == 'Increase Endurance' ? 'selected' }}>Increase Endurance</option>
+                                <option value="General Fitness" {{ user.fitness_goal == 'General Fitness' ? 'selected' }}>General Fitness</option>
+                                <option value="Prepare for Competition" {{ user.fitness_goal == 'Prepare for Competition' ? 'selected' }}>Prepare for Competition</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="field-label" for="experience_level">Experience Level</label>
+                        <div class="field-wrap">
+                            <select id="experience_level" name="experience_level" class="auth-input">
+                                <option value="beginner" {{ user.experience_level == 'beginner' ? 'selected' }}>Beginner</option>
+                                <option value="intermediate" {{ user.experience_level == 'intermediate' ? 'selected' }}>Intermediate</option>
+                                <option value="advanced" {{ user.experience_level == 'advanced' ? 'selected' }}>Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="field-label" for="height">Height (cm)</label>
+                        <div class="field-wrap">
+                            <input type="number" id="height" name="height" class="auth-input"
+                                   step="0.1" min="100" max="250"
+                                   placeholder="170"
+                                   value="{{ user.height }}">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="field-label" for="weight_goal">Weight Goal (kg)</label>
+                        <div class="field-wrap">
+                            <input type="number" id="weight_goal" name="weight_goal" class="auth-input"
+                                   step="0.1" min="30" max="300"
+                                   placeholder="75"
+                                   value="{{ user.weight_goal }}">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="field-label" for="workout_frequency">Workout Frequency</label>
+                        <div class="field-wrap">
+                            <select id="workout_frequency" name="workout_frequency" class="auth-input">
+                                <option value="">Select frequency</option>
+                                <option value="1-2 days/week" {{ user.workout_frequency == '1-2 days/week' ? 'selected' }}>1-2 days/week</option>
+                                <option value="3-4 days/week" {{ user.workout_frequency == '3-4 days/week' ? 'selected' }}>3-4 days/week</option>
+                                <option value="5-6 days/week" {{ user.workout_frequency == '5-6 days/week' ? 'selected' }}>5-6 days/week</option>
+                                <option value="Every day" {{ user.workout_frequency == 'Every day' ? 'selected' }}>Every day</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="field-label" for="preferred_days">Preferred Workout Days</label>
+                        <div class="field-wrap">
+                            <select id="preferred_days" name="preferred_days" class="auth-input">
+                                <option value="">Select days</option>
+                                <option value="Weekdays" {{ user.preferred_days == 'Weekdays' ? 'selected' }}>Weekdays</option>
+                                <option value="Weekends" {{ user.preferred_days == 'Weekends' ? 'selected' }}>Weekends</option>
+                                <option value="Mornings" {{ user.preferred_days == 'Mornings' ? 'selected' }}>Mornings</option>
+                                <option value="Evenings" {{ user.preferred_days == 'Evenings' ? 'selected' }}>Evenings</option>
+                                <option value="Flexible" {{ user.preferred_days == 'Flexible' ? 'selected' }}>Flexible</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="field-label" for="location">Location</label>
+                        <div class="field-wrap">
+                            <input type="text" id="location" name="location" class="auth-input"
+                                   placeholder="City, Country"
+                                   value="{{ user.location }}">
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn-gainz">
+                            <i class="bi bi-check-lg"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--panel-bg);
+    border: 3px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #555;
+}
+
+.info-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.82rem;
+    color: #ccc;
+}
+</style>
+{% endblock %}

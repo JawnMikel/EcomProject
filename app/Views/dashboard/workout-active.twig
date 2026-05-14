@@ -1,0 +1,742 @@
+{% extends "layout/base.twig" %}
+
+{% block title %}Active Workout — GAINZ{% endblock %}
+
+{% block content %}
+<div class="compact-page">
+<div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
+
+<div class="section-header">
+    <h1 class="section-title">Active Workout</h1>
+    <p class="section-subtitle">Add exercises and track your sets</p>
+    <div class="section-title-bar"></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="panel-card mb-3">
+            <h5 class="panel-card-title">
+                <i class="bi bi-dumbbell"></i> Exercises
+            </h5>
+
+            {% if exercises is empty %}
+            <div class="text-center py-4">
+                <p class="text-muted mb-3">No exercises added yet. Click the button below to add exercises.</p>
+            </div>
+            {% else %}
+            <div class="exercise-list">
+                {% for exerciseId, data in exercise_details %}
+                <div class="exercise-item mb-3">
+                    <div class="exercise-header">
+                        <div>
+                            <h6 class="exercise-name">{{ data.info.name }}</h6>
+                            <span class="badge-difficulty badge-{{ data.info.difficulty }}">{{ data.info.difficulty }}</span>
+                        </div>
+                    </div>
+
+                    <table class="sets-table">
+                        <thead>
+                            <tr>
+                                <th>Set</th>
+                                <th>Reps</th>
+                                <th>Weight (kg)</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for set in data.sets %}
+                            <tr>
+                                <td>{{ set.set_number }}</td>
+                                <td>{{ set.reps }}</td>
+                                <td>{{ set.weight }}</td>
+                                <td>
+                                    <form method="POST" action="/EcomProject/public/workouts/delete-set" style="display:inline;">
+                                        <input type="hidden" name="set_id" value="{{ set.id }}">
+                                        <button type="submit" class="btn-delete-set" title="Delete set">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <form method="POST" action="/EcomProject/public/workouts/add-set" class="add-set-form mt-2">
+                        <input type="hidden" name="exercise_id" value="{{ exerciseId }}">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-auto">
+                                <input type="number" name="reps" class="auth-input" placeholder="Reps" min="1" required style="width: 80px;">
+                            </div>
+                            <div class="col-auto">
+                                <input type="number" name="weight" class="auth-input" placeholder="kg" step="0.5" min="0" style="width: 80px;">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn-gainz btn-sm">
+                                    <i class="bi bi-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <button class="btn-gainz mt-2" data-bs-toggle="modal" data-bs-target="#addExerciseModal">
+                <i class="bi bi-plus-circle"></i> Add Exercise
+            </button>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="sidebar-stack">
+            <div class="timer-bar">
+                <div class="timer-block">
+                    <button type="button" class="timer-control-btn" id="timerToggleBtn" onclick="toggleTimer()">
+                        <i class="bi bi-play-fill" id="timerIcon"></i>
+                    </button>
+                    <span class="timer-display" id="mainTimer">00:00</span>
+                </div>
+                <div class="rest-block" id="restBlock" style="display: none;">
+                    <span class="rest-label">REST</span>
+                    <span class="rest-countdown" id="restCountdown">00:00</span>
+                </div>
+            </div>
+
+            <div class="custom-timer-bar">
+                <span class="timer-label">Custom Timer:</span>
+                <div class="custom-timer-inputs">
+                    <input type="number" id="customMin" class="timer-input" placeholder="0" min="0" max="99" value="0">
+                    <span class="timer-sep">:</span>
+                    <input type="number" id="customSec" class="timer-input" placeholder="30" min="0" max="59" value="30">
+                </div>
+                <button type="button" class="timer-start-btn" onclick="startCustomTimer()">
+                    <i class="bi bi-play-fill"></i>
+                </button>
+            </div>
+
+            <div class="rest-controls-bar">
+                <span class="rest-label">Quick Rest:</span>
+                <button type="button" class="rest-btn-chip" onclick="startRestTimer(30)">30s</button>
+                <button type="button" class="rest-btn-chip" onclick="startRestTimer(60)">60s</button>
+                <button type="button" class="rest-btn-chip" onclick="startRestTimer(90)">90s</button>
+                <button type="button" class="rest-btn-chip" onclick="startRestTimer(120)">2m</button>
+            </div>
+
+            <form method="POST" action="/EcomProject/public/workouts/complete" class="finish-bar">
+                <button type="submit" class="btn-finish">
+                    <i class="bi bi-check-lg"></i> Finish Workout
+                </button>
+            </form>
+            <a href="/EcomProject/public/workouts" class="cancel-link">Cancel</a>
+        </div>
+    </div>
+</div>
+
+<!-- Add Exercise Modal - Using Form Select -->
+<div class="modal fade" id="addExerciseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Exercise</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if all_exercises %}
+                <form method="POST" action="/EcomProject/public/workouts/add-exercise">
+                    <div class="mb-3">
+                        <label class="field-label">Select Exercise</label>
+                        <select name="exercise_id" class="auth-input" required>
+                            <option value="">-- Choose an exercise --</option>
+                            {% for exercise in all_exercises %}
+                            <option value="{{ exercise.id }}">{{ exercise.name }} ({{ exercise.category_name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-gainz w-100">
+                        <i class="bi bi-plus-circle"></i> Add Exercise
+                    </button>
+                </form>
+                {% else %}
+                <p class="text-muted">No exercises available. Please add exercises first.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.compact-page {
+    padding-top: 0.5rem;
+}
+.compact-page .section-header {
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0;
+}
+.compact-page .section-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+.compact-page .section-subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+.compact-page .section-title-bar {
+    margin-bottom: 0.75rem;
+}
+
+.sidebar-stack {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.timer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.timer-block {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #888;
+}
+
+.timer-control-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #000;
+}
+
+.timer-control-btn:hover {
+    transform: scale(1.1);
+}
+
+.timer-block i {
+    font-size: 0.9rem;
+}
+
+.timer-block .timer-display {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.5rem;
+    color: var(--accent);
+}
+
+.custom-timer-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.timer-label {
+    font-size: 0.65rem;
+    color: #888;
+}
+
+.custom-timer-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.timer-input {
+    width: 36px;
+    padding: 0.2rem 0.3rem;
+    font-size: 0.75rem;
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: #fff;
+    text-align: center;
+}
+
+.timer-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.timer-sep {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.timer-start-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #000;
+    font-size: 0.7rem;
+}
+
+.timer-start-btn:hover {
+    background: #ff6b35;
+}
+
+.rest-block {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--accent);
+    border-radius: 4px;
+}
+
+.rest-block .rest-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #000;
+}
+
+.rest-block .rest-countdown {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000;
+}
+
+.rest-controls-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.rest-controls-bar .rest-label {
+    font-size: 0.7rem;
+    color: #888;
+    margin-right: 0.25rem;
+}
+
+.rest-btn-chip {
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    color: #aaa;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.rest-btn-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.rest-btn-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+}
+
+.finish-bar {
+    margin-top: 0.5rem;
+}
+
+.btn-finish {
+    width: 100%;
+    padding: 0.6rem;
+    background: linear-gradient(135deg, var(--accent), #ff6b35);
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-finish:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+}
+
+.cancel-link {
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.5rem;
+    text-decoration: none;
+}
+
+.cancel-link:hover {
+    color: #888;
+}
+
+.exercise-item {
+    padding: 0.6rem;
+    background: var(--panel-bg);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-bottom: 0.6rem;
+}
+
+.exercise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.exercise-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    margin-right: 0.5rem;
+}
+
+.badge-difficulty {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.badge-beginner { background: #22c55e; color: #000; }
+.badge-intermediate { background: #f59e0b; color: #000; }
+.badge-advanced { background: #ef4444; color: #fff; }
+
+.sets-table {
+    width: 100%;
+    font-size: 0.8rem;
+}
+
+.sets-table th {
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    color: #666;
+    padding: 0.4rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.sets-table td {
+    padding: 0.4rem;
+    color: #ccc;
+}
+
+.btn-delete-set {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.btn-delete-set:hover {
+    color: #ef4444;
+}
+
+.add-set-form .auth-input {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.5rem;
+}
+
+.modal-dark .modal-content {
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+}
+
+.modal-dark .modal-header {
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-dark .modal-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+}
+
+.exercise-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.exercise-select-btn {
+    display: flex !important;
+    flex-direction: column;
+    background: var(--panel-bg) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px;
+    padding: 0.6rem;
+    text-align: left;
+    cursor: pointer !important;
+    transition: all 0.2s;
+    width: 100%;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1;
+    color: #fff !important;
+}
+
+button.exercise-select-btn {
+    -webkit-appearance: button !important;
+    appearance: button !important;
+}
+
+button.exercise-select-btn:disabled {
+    opacity: 1 !important;
+    cursor: pointer !important;
+}
+
+.exercise-select-btn:hover {
+    border-color: var(--accent) !important;
+    background: rgba(255, 107, 53, 0.2) !important;
+}
+
+.exercise-select-btn:active {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+}
+
+.modal.show .modal-dialog {
+    pointer-events: none;
+}
+
+.modal.show .modal-dialog .modal-content {
+    pointer-events: auto;
+}
+
+.modal-body {
+    pointer-events: auto !important;
+    z-index: 1050;
+    position: relative;
+}
+
+.exercise-grid {
+    pointer-events: auto !important;
+}
+
+.exercise-select-name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.exercise-select-category {
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+}
+
+.btn-sm {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+}
+</style>
+
+<script>
+let restInterval = null;
+let timerRunning = false;
+let timerInterval = null;
+let customTimerRunning = false;
+let customTimerInterval = null;
+
+function toggleTimer() {
+    const btn = document.getElementById('timerToggleBtn');
+    const icon = document.getElementById('timerIcon');
+    const timerDisplay = document.getElementById('mainTimer');
+
+    if (timerRunning) {
+        // Stop the elapsed timer
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        timerRunning = false;
+        icon.className = 'bi bi-play-fill';
+        btn.style.background = 'var(--accent)';
+    } else {
+        // Start the elapsed timer
+        timerRunning = true;
+        icon.className = 'bi bi-pause-fill';
+        btn.style.background = '#22c55e';
+
+        const startTime = new Date('{{ session.start_time }}');
+        timerInterval = setInterval(function() {
+            const now = new Date();
+            const diff = now - startTime;
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            timerDisplay.textContent =
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }, 1000);
+    }
+}
+
+function startCustomTimer() {
+    const minInput = document.getElementById('customMin');
+    const secInput = document.getElementById('customSec');
+    const minutes = parseInt(minInput.value) || 0;
+    const seconds = parseInt(secInput.value) || 0;
+    const totalSeconds = (minutes * 60) + seconds;
+
+    if (totalSeconds <= 0) {
+        alert('Please enter a time greater than 0');
+        return;
+    }
+
+    // Stop any running timer first
+    if (timerRunning) {
+        toggleTimer();
+    }
+
+    // Stop rest timer if running
+    stopRestTimer();
+
+    let remaining = totalSeconds;
+    const restBlock = document.getElementById('restBlock');
+    const countdown = document.getElementById('restCountdown');
+
+    restBlock.style.display = 'flex';
+
+    customTimerRunning = true;
+    customTimerInterval = setInterval(function() {
+        remaining--;
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        countdown.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+        if (remaining <= 0) {
+            stopCustomTimer();
+            // Play a beep sound
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.value = 880;
+                gainNode.gain.value = 0.3;
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.2);
+            } catch (e) {}
+            alert('Timer complete!');
+        }
+    }, 1000);
+}
+
+function stopCustomTimer() {
+    if (customTimerInterval) {
+        clearInterval(customTimerInterval);
+        customTimerInterval = null;
+    }
+    customTimerRunning = false;
+    document.getElementById('restBlock').style.display = 'none';
+}
+
+function startRestTimer(seconds) {
+    stopRestTimer();
+    stopCustomTimer();
+
+    let remaining = seconds;
+    const restBlock = document.getElementById('restBlock');
+    const countdown = document.getElementById('restCountdown');
+
+    restBlock.style.display = 'flex';
+
+    // Update button states
+    document.querySelectorAll('.rest-btn-chip').forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    restInterval = setInterval(function() {
+        remaining--;
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        countdown.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+        if (remaining <= 0) {
+            stopRestTimer();
+            // Play a beep sound
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.value = 880;
+                gainNode.gain.value = 0.3;
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.2);
+            } catch (e) {}
+            alert('Rest time is up! Ready for your next set.');
+        }
+    }, 1000);
+}
+
+function stopRestTimer() {
+    if (restInterval) {
+        clearInterval(restInterval);
+        restInterval = null;
+    }
+    document.getElementById('restBlock').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const startTime = new Date('{{ session.start_time }}');
+    const timerDisplay = document.getElementById('mainTimer');
+
+    function updateTimer() {
+        const now = new Date();
+        const diff = now - startTime;
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        timerDisplay.textContent =
+            String(hours).padStart(2, '0') + ':' +
+            String(minutes).padStart(2, '0') + ':' +
+            String(seconds).padStart(2, '0');
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+});
+</script>
+</div>
+{% endblock %}

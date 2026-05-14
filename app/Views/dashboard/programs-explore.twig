@@ -1,0 +1,221 @@
+{% extends "layout/base.twig" %}
+
+{% block title %}Explore Programs — GAINZ{% endblock %}
+
+{% block content %}
+<div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
+
+<div class="section-header">
+    <h1 class="section-title">Explore Programs</h1>
+    <p class="section-subtitle">Find pre-made workout programs</p>
+    <div class="section-title-bar"></div>
+</div>
+
+<!-- Filters -->
+<div class="explore-filters">
+    <form method="GET" action="/EcomProject/public/programs/explore" class="filters-form">
+        <div class="filter-group">
+            <label class="field-label">Goal</label>
+            <select name="goal" class="auth-input">
+                <option value="">Any Goal</option>
+                <option value="muscle" {{ selected_goal == 'muscle' ? 'selected' }}>Build Muscle</option>
+                <option value="strength" {{ selected_goal == 'strength' ? 'selected' }}>Strength</option>
+                <option value="weight_loss" {{ selected_goal == 'weight_loss' ? 'selected' }}>Weight Loss</option>
+                <option value="endurance" {{ selected_goal == 'endurance' ? 'selected' }}>Endurance</option>
+                <option value="general" {{ selected_goal == 'general' ? 'selected' }}>General Fitness</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="field-label">Difficulty</label>
+            <select name="difficulty" class="auth-input">
+                <option value="">Any Level</option>
+                <option value="beginner" {{ selected_difficulty == 'beginner' ? 'selected' }}>Beginner</option>
+                <option value="intermediate" {{ selected_difficulty == 'intermediate' ? 'selected' }}>Intermediate</option>
+                <option value="advanced" {{ selected_difficulty == 'advanced' ? 'selected' }}>Advanced</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label class="field-label">Environment</label>
+            <select name="environment" class="auth-input">
+                <option value="">Any</option>
+                <option value="gym" {{ selected_environment == 'gym' ? 'selected' }}>Gym</option>
+                <option value="home" {{ selected_environment == 'home' ? 'selected' }}>Home</option>
+                <option value="cardio" {{ selected_environment == 'cardio' ? 'selected' }}>Cardio Only</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-gainz">
+            <i class="bi bi-search"></i> Find
+        </button>
+        <a href="/EcomProject/public/programs/explore" class="btn-gainz-outline">
+            <i class="bi bi-x-circle"></i> Clear
+        </a>
+    </form>
+</div>
+
+<!-- Programs Grid -->
+{% if programs %}
+<div class="explore-grid">
+    {% for program in programs %}
+    <div class="explore-card">
+        <div class="explore-header">
+            <span class="explore-badge badge-{{ program.difficulty }}">{{ program.difficulty }}</span>
+            <span class="explore-badge badge-env badge-{{ program.environment }}">{{ program.environment }}</span>
+        </div>
+        <h5 class="explore-title">{{ program.name }}</h5>
+        <p class="explore-desc">{{ program.description }}</p>
+
+        {% if program.workouts %}
+        <div class="explore-exercises">
+            <span class="exercises-label">{{ program.workouts|length }} exercises</span>
+            <div class="exercise-tags">
+                {% for ex in program.workouts[:4] %}
+                <span class="exercise-tag">{{ ex.exercise_name }}</span>
+                {% endfor %}
+                {% if program.workouts|length > 4 %}
+                <span class="exercise-tag">+{{ program.workouts|length - 4 }} more</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/EcomProject/public/programs/copy" class="explore-action">
+            <input type="hidden" name="template_id" value="{{ program.id }}">
+            <button type="submit" class="btn-gainz w-100">
+                <i class="bi bi-plus-lg"></i> Add to My Routines
+            </button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="panel-card">
+    <p class="empty-state">No programs found. Try different filters.</p>
+</div>
+{% endif %}
+
+<div class="back-link">
+    <a href="/EcomProject/public/programs" class="btn-gainz-outline">
+        <i class="bi bi-arrow-left"></i> Back to My Routines
+    </a>
+</div>
+
+<style>
+.explore-filters {
+    margin-bottom: 2rem;
+}
+
+.filters-form {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group .field-label {
+    margin-bottom: 0.5rem;
+}
+
+.explore-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.explore-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1.5rem;
+}
+
+.explore-header {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.explore-badge {
+    font-size: 0.6rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.badge-beginner { background: #22c55e; color: #000; }
+.badge-intermediate { background: #f59e0b; color: #000; }
+.badge-advanced { background: #ef4444; color: #fff; }
+
+.badge-gym { background: #3b82f6; color: #fff; }
+.badge-home { background: #8b5cf6; color: #fff; }
+.badge-cardio { background: #ec4899; color: #fff; }
+
+.explore-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.explore-desc {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.explore-exercises {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: #0a0a0a;
+    border-radius: 2px;
+}
+
+.exercises-label {
+    font-size: 0.65rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.exercise-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.exercise-tag {
+    font-size: 0.65rem;
+    color: #aaa;
+    background: #151515;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+}
+
+.explore-action .btn-gainz {
+    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+}
+
+.empty-state {
+    padding: 3rem 0;
+    text-align: center;
+    color: #444;
+}
+
+.back-link {
+    margin-top: 1rem;
+}
+</style>
+{% endblock %}

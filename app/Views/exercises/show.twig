@@ -1,0 +1,152 @@
+{% extends "layout/base.twig" %}
+
+{% block title %}{{ exercise.name }} — GAINZ{% endblock %}
+
+{% block content %}
+<div class="watermark"><i class="bi bi-dumbbell"></i></div>
+
+<div class="section-header">
+    <h1 class="section-title">{{ exercise.name }}</h1>
+    <p class="section-subtitle">Exercise details and instructions</p>
+    <div class="section-title-bar"></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="panel-card mb-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <span class="badge-difficulty badge-{{ exercise.difficulty }}">{{ exercise.difficulty|capitalize }}</span>
+                    <span class="ms-2 exercise-category">{{ exercise.category_name }}</span>
+                </div>
+                <a href="/EcomProject/public/exercises" class="btn-gainz btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+
+            {% if exercise.description %}
+            <h5 class="mb-3">Description</h5>
+            <p class="mb-4">{{ exercise.description }}</p>
+            {% endif %}
+
+            {% if exercise.equipment %}
+            <h5 class="mb-3">Equipment Needed</h5>
+            <p class="mb-4"><i class="bi bi-tools me-2"></i>{{ exercise.equipment }}</p>
+            {% endif %}
+
+            {% if exercise.media_url %}
+            <h5 class="mb-3">Media</h5>
+            <div class="video-container mb-4">
+                {% if exercise.media_url ends with '.jpg' or exercise.media_url ends with '.png' or exercise.media_url ends with '.gif' %}
+                <img src="{{ exercise.media_url }}" alt="{{ exercise.name }}" class="img-fluid">
+                {% else %}
+                <iframe src="{{ exercise.media_url }}" frameborder="0" allowfullscreen></iframe>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="panel-card mb-4">
+            <h5 class="panel-card-title">
+                <i class="bi bi-info-circle"></i> Quick Info
+            </h5>
+            <div class="account-info">
+                <div class="info-row">
+                    <span class="info-label">Category</span>
+                    <span class="info-value">{{ exercise.category_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Difficulty</span>
+                    <span class="info-value text-capitalize">{{ exercise.difficulty }}</span>
+                </div>
+                {% if exercise.equipment %}
+                <div class="info-row">
+                    <span class="info-label">Equipment</span>
+                    <span class="info-value">{{ exercise.equipment }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <h5 class="panel-card-title">
+                <i class="bi bi-plus-circle"></i> Add to Workout
+            </h5>
+            <p class="text-muted small">Start a new workout session to log sets for this exercise.</p>
+            <a href="/EcomProject/public/workouts" class="btn-gainz w-100">
+                <i class="bi bi-lightning-charge"></i> Start Workout
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.badge-difficulty {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.badge-beginner { background: #22c55e; color: #000; }
+.badge-intermediate { background: #f59e0b; color: #000; }
+.badge-advanced { background: #ef4444; color: #fff; }
+
+.exercise-category {
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #000;
+}
+
+.video-container iframe,
+.video-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.info-row:last-child { border-bottom: none; }
+
+.info-label {
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #555;
+}
+
+.info-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.82rem;
+    color: #ccc;
+}
+</style>
+{% endblock %}

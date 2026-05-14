@@ -1,0 +1,218 @@
+{% extends "layout/base.twig" %}
+
+{% block title %}Exercise Library — GAINZ{% endblock %}
+
+{% block content %}
+<div class="watermark"><i class="bi bi-dumbbell"></i></div>
+
+<div class="section-header">
+    <h1 class="section-title">Exercise Library</h1>
+    <p class="section-subtitle">Browse exercises by muscle group and difficulty</p>
+    <div class="section-title-bar"></div>
+</div>
+
+{% if success %}
+<div class="alert-gainz">
+    <i class="bi bi-check-circle me-1"></i>{{ success }}
+</div>
+{% endif %}
+{% if error %}
+<div class="alert-gainz alert-gainz-error">
+    <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+</div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-3">
+        <div class="panel-card">
+            <h5 class="panel-card-title">
+                <i class="bi bi-plus-circle"></i> Add Exercise
+            </h5>
+            <form method="POST" action="/EcomProject/public/exercises">
+                <label class="field-label" for="ex-name">Exercise Name</label>
+                <input type="text" id="ex-name" name="name" class="auth-input mb-2" placeholder="e.g., Barbell Curl" required>
+
+                <label class="field-label" for="ex-category">Category</label>
+                <select id="ex-category" name="category_id" class="auth-input mb-2">
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label class="field-label" for="ex-difficulty">Difficulty</label>
+                <select id="ex-difficulty" name="difficulty" class="auth-input mb-2">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+
+                <label class="field-label" for="ex-equipment">Equipment</label>
+                <input type="text" id="ex-equipment" name="equipment" class="auth-input mb-2" placeholder="e.g., Dumbbells">
+
+                <label class="field-label" for="ex-description">Description</label>
+                <textarea id="ex-description" name="description" class="auth-input mb-3" rows="2" placeholder="Optional description"></textarea>
+
+                <button type="submit" class="btn-gainz w-100">
+                    <i class="bi bi-plus-lg"></i> Create
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-9">
+        <div class="panel-card filter-panel">
+            <form method="GET" action="/EcomProject/public/exercises" class="filter-form">
+                <select id="category" name="category" class="auth-input">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.name }}" {{ selected_category == cat.name ? 'selected' }}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+                <select id="difficulty" name="difficulty" class="auth-input">
+                    <option value="">All Levels</option>
+                    <option value="beginner" {{ selected_difficulty == 'beginner' ? 'selected' }}>Beginner</option>
+                    <option value="intermediate" {{ selected_difficulty == 'intermediate' ? 'selected' }}>Intermediate</option>
+                    <option value="advanced" {{ selected_difficulty == 'advanced' ? 'selected' }}>Advanced</option>
+                </select>
+                <button type="submit" class="btn-gainz">
+                    <i class="bi bi-filter"></i> Filter
+                </button>
+                <a href="/EcomProject/public/exercises" class="btn-gainz-outline">
+                    <i class="bi bi-x-circle"></i> Clear
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if exercises is empty %}
+<div class="panel-card">
+    <div class="text-center py-5">
+        <i class="bi bi-dumbbell" style="font-size: 3rem; color: var(--accent);"></i>
+        <p class="mt-3 text-muted">No exercises found. Try adjusting your filters.</p>
+    </div>
+</div>
+{% else %}
+<div class="row g-4">
+    {% for exercise in exercises %}
+    <div class="col-md-6 col-lg-4 col-xl-3">
+        <div class="panel-card exercise-card">
+            <div class="exercise-header">
+                <span class="badge-difficulty badge-{{ exercise.difficulty }}">{{ exercise.difficulty }}</span>
+                <span class="exercise-category">{{ exercise.category_name }}</span>
+            </div>
+            <h5 class="exercise-name">{{ exercise.name }}</h5>
+            {% if exercise.description %}
+            <p class="exercise-description">{{ exercise.description }}</p>
+            {% endif %}
+            {% if exercise.equipment %}
+            <p class="exercise-equipment">
+                <i class="bi bi-tools"></i> {{ exercise.equipment }}
+            </p>
+            {% endif %}
+            <a href="/EcomProject/public/exercises/{{ exercise.id }}" class="btn-gainz btn-sm">
+                <i class="bi bi-info-circle"></i> View
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.exercise-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.exercise-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.exercise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.badge-difficulty {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.badge-beginner { background: #22c55e; color: #000; }
+.badge-intermediate { background: #f59e0b; color: #000; }
+.badge-advanced { background: #ef4444; color: #fff; }
+
+.exercise-category {
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.exercise-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.exercise-description {
+    font-size: 0.85rem;
+    color: #999;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.exercise-equipment {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+.btn-gainz-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: #999;
+}
+
+.btn-gainz-secondary:hover {
+    background: var(--panel-bg);
+    color: #fff;
+}
+
+.filter-panel {
+    padding: 1rem;
+}
+
+.filter-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.filter-form .auth-input {
+    flex: 1;
+    max-width: 200px;
+}
+
+@media (max-width: 768px) {
+    .filter-form {
+        flex-wrap: wrap;
+    }
+    .filter-form .auth-input {
+        max-width: none;
+        flex: 1 1 calc(50% - 0.5rem);
+    }
+}
+</style>
+{% endblock %}

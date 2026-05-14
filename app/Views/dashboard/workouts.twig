@@ -1,13 +1,13 @@
 {% extends "layout/base.twig" %}
 
-{% block title %}Workout Sessions — GAINZ{% endblock %}
+{% block title %}Workouts — GAINZ{% endblock %}
 
 {% block content %}
 <div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
 
 <div class="section-header">
-    <h1 class="section-title">Workout Sessions</h1>
-    <p class="section-subtitle">Log today's workout and review your recent sessions.</p>
+    <h1 class="section-title">Workouts</h1>
+    <p class="section-subtitle">Start a new workout or log a session</p>
     <div class="section-title-bar"></div>
 </div>
 
@@ -22,65 +22,71 @@
 </div>
 {% endif %}
 
-<div class="row g-4">
-    <div class="col-lg-6">
-        <div class="panel-card mb-4">
+{% if active_session %}
+<div class="alert-gainz">
+    <i class="bi bi-exclamation-circle me-1"></i>You have an active workout in progress!
+    <a href="/EcomProject/public/workouts/active" class="btn btn-sm btn-warning ms-2">Continue Workout</a>
+</div>
+{% endif %}
+
+<div class="workout-layout">
+    <!-- Start Workout -->
+    <div class="workout-start-panel">
+        <div class="panel-card panel-action">
+            <div class="panel-icon">
+                <i class="bi bi-play-circle-fill"></i>
+            </div>
             <h5 class="panel-card-title">
-                <i class="bi bi-plus-circle"></i> Log New Session
+                <i class="bi bi-lightning-charge"></i> Start Workout
             </h5>
-            <form action="/EcomProject/public/workouts" method="POST">
-                <div>
-                    <label class="field-label" for="session_date">Session Date</label>
-                    <div class="field-wrap">
-                        <input type="date" id="session_date" name="session_date" class="auth-input" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="field-label" for="duration_minutes">Duration (minutes)</label>
-                    <div class="field-wrap">
-                        <input type="number" id="duration_minutes" name="duration_minutes" class="auth-input" min="1" placeholder="Duration in minutes" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="field-label" for="total_volume">Total Volume (kg)</label>
-                    <div class="field-wrap">
-                        <input type="number" id="total_volume" name="total_volume" class="auth-input" step="0.1" placeholder="Optional">
-                    </div>
-                </div>
-                <div>
-                    <label class="field-label" for="notes">Notes</label>
-                    <div class="field-wrap">
-                        <textarea id="notes" name="notes" class="auth-input" rows="3" placeholder="Short session notes"></textarea>
-                    </div>
-                </div>
-                <button type="submit" class="btn-gainz">Save Session</button>
+            <p class="text-muted mb-3">Begin a new session to track exercises, sets, and reps.</p>
+            {% if active_session %}
+            <a href="/EcomProject/public/workouts/active" class="btn-gainz w-100">
+                <i class="bi bi-lightning-charge"></i> Continue Workout
+            </a>
+            {% else %}
+            <form method="POST" action="/EcomProject/public/workouts/start">
+                {% if programs %}
+                <select name="program_workout_id" id="program_workout_id" class="auth-input mb-3">
+                    <option value="">Empty Workout</option>
+                    {% for program in programs %}
+                    <option value="{{ program.id }}">{{ program.name }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <button type="submit" class="btn-gainz w-100">
+                    <i class="bi bi-lightning-charge"></i> Start Now
+                </button>
             </form>
+            {% endif %}
         </div>
     </div>
-    <div class="col-lg-6">
+
+    <!-- Workout Programs List -->
+    <div class="workout-list-panel">
         <div class="panel-card">
             <h5 class="panel-card-title">
-                <i class="bi bi-clock-history"></i> Recent Sessions
+                <i class="bi bi-list-ul"></i> Available Workouts
             </h5>
-            {% if sessions %}
-            <div>
-                {% for session in sessions %}
-                <div class="gainz-list-item">
-                    <div>
-                        <div class="gainz-list-title">{{ session.session_date }}</div>
-                        <div class="gainz-list-sub">Duration {{ (session.total_duration / 60) | round(0, 'floor') }} min</div>
+            {% if programs %}
+            <div class="workout-items">
+                {% for program in programs %}
+                <div class="workout-item">
+                    <div class="workout-item-info">
+                        <span class="workout-item-name">{{ program.name }}</span>
+                        <span class="workout-item-meta">{{ program.exercise_count ?? 0 }} exercises</span>
                     </div>
-                    <div class="text-end">
-                        <span class="gainz-list-meta">{{ session.total_volume ? session.total_volume ~ ' kg' : 'No volume' }}</span>
-                    </div>
+                    <form method="POST" action="/EcomProject/public/workouts/start" class="workout-item-action">
+                        <input type="hidden" name="program_workout_id" value="{{ program.id }}">
+                        <button type="submit" class="btn-gainz-outline btn-sm">
+                            <i class="bi bi-play"></i> Start
+                        </button>
+                    </form>
                 </div>
-                {% if session.notes %}
-                <p class="mb-0 text-muted" style="padding: 0.5rem 0; font-size: 0.75rem;">{{ session.notes }}</p>
-                {% endif %}
                 {% endfor %}
             </div>
             {% else %}
-            <p class="text-muted mb-0">No workouts logged yet. Add your first session.</p>
+            <p class="text-muted mb-0 empty-state">No programs yet. Create one in Programs!</p>
             {% endif %}
         </div>
     </div>

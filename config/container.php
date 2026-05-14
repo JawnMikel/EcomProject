@@ -31,5 +31,17 @@ return function (ContainerBuilder $builder) {
             return $twig;
         },
 
+        \App\Models\ExerciseModel::class => function (ContainerInterface $c) {
+            return new \App\Models\ExerciseModel($c->get(PDO::class));
+        },
+
+        \App\Models\WorkoutSessionModel::class => function (ContainerInterface $c) {
+            return new \App\Models\WorkoutSessionModel($c->get(PDO::class));
+        },
+
+        \App\Models\TrainingProgramModel::class => function (ContainerInterface $c) {
+            return new \App\Models\TrainingProgramModel($c->get(PDO::class));
+        },
+
     ]);
 };
