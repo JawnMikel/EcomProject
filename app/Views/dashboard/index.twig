@@ -191,6 +191,83 @@
     border-radius: 999px;
     white-space: nowrap;
 }
+.workout-history {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.workout-card {
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1rem;
+    border-radius: 4px;
+}
+.workout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.workout-date {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+}
+.workout-time {
+    font-size: 0.7rem;
+    color: #666;
+    margin-left: 0.5rem;
+}
+.workout-header > div {
+    display: flex;
+    align-items: baseline;
+}
+.workout-duration {
+    font-size: 0.75rem;
+    color: var(--accent);
+    background: rgba(207,255,0,0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+.workout-exercises {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.workout-exercise {
+    padding: 0.5rem;
+    background: #111;
+    border-radius: 4px;
+}
+.workout-exercise .exercise-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ccc;
+    margin-bottom: 0.35rem;
+}
+.workout-exercise .exercise-sets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+.set-badge {
+    font-size: 0.7rem;
+    color: #888;
+    background: #1a1a1a;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+}
+.set-badge .set-type {
+    color: var(--accent);
+    font-size: 0.65rem;
+    margin-left: 0.25rem;
+}
+.workout-empty {
+    font-size: 0.8rem;
+    color: #555;
+    margin: 0;
+}
 </style>
 {% endblock %}
 
@@ -257,6 +334,46 @@
                     {% endfor %}
                 </div>
             </div>
+        </div>
+
+        <div class="panel-box mt-4">
+            <h3><i class="bi bi-clock-history"></i> Past Workouts</h3>
+            {% if recentWorkouts %}
+            <div class="workout-history">
+                {% for workout in recentWorkouts %}
+                <div class="workout-card">
+                    <div class="workout-header">
+                        <div>
+                            <span class="workout-date">{{ workout.session_date }}</span>
+                            <span class="workout-time">{{ workout.start_time ? workout.start_time|date('g:i A') : '' }}</span>
+                        </div>
+                        <span class="workout-duration">{{ workout.total_duration ? (workout.total_duration / 60)|round ~ ' min' : '--' }}</span>
+                    </div>
+                    {% if workout.exercises %}
+                    <div class="workout-exercises">
+                        {% for exercise in workout.exercises %}
+                        <div class="workout-exercise">
+                            <div class="exercise-name">{{ exercise.exercise_name }}</div>
+                            <div class="exercise-sets">
+                                {% for set in exercise.sets %}
+                                <span class="set-badge">
+                                    {{ set.reps }} reps × {{ set.weight }} lbs
+                                    {% if set.set_type != 'normal' %}<span class="set-type">({{ set.set_type }})</span>{% endif %}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="workout-empty">No exercises logged</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No workout history yet. Start a workout to see your progress here.</p>
+            {% endif %}
         </div>
     </div>
 

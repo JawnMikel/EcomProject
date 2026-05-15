@@ -10,14 +10,14 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
             <a href="/EcomProject/public/workouts" class="btn-back-link">
-                <i class="bi bi-arrow-left"></i> Back
+                <i class="bi bi-arrow-left"></i> <span data-i18n="common.back">Back</span>
             </a>
-            <h1 class="section-title">Active Workout</h1>
-            <p class="section-subtitle">Add exercises and track your sets</p>
+            <h1 class="section-title" data-i18n="workouts.active_workout">Active Workout</h1>
+            <p class="section-subtitle" data-i18n="workouts.add_exercises">Add exercises and track your sets</p>
         </div>
         <form method="POST" action="/EcomProject/public/workouts/cancel">
             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Cancel this workout? All progress will be lost.')">
-                <i class="bi bi-x-lg"></i> Cancel
+                <i class="bi bi-x-lg"></i> <span data-i18n="common.cancel">Cancel</span>
             </button>
         </form>
     </div>

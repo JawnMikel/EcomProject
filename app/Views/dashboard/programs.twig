@@ -6,8 +6,8 @@
 <div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
 
 <div class="section-header">
-    <h1 class="section-title">Training Programs</h1>
-    <p class="section-subtitle">Build your workout routines.</p>
+    <h1 class="section-title" data-i18n="programs.title">Training Programs</h1>
+    <p class="section-subtitle" data-i18n="programs.subtitle">Build your workout routines.</p>
     <div class="section-title-bar"></div>
     <a href="/EcomProject/public/programs/explore" class="btn-gainz explore-btn">
         <i class="bi bi-compass"></i> Explore
@@ -29,13 +29,13 @@
     <!-- Create New Program -->
     <div class="panel-card program-create">
         <h5 class="panel-card-title">
-            <i class="bi bi-plus-circle"></i> New Routine
+            <i class="bi bi-plus-circle"></i> <span data-i18n="programs.new_routine">New Routine</span>
         </h5>
         <form action="/EcomProject/public/programs" method="POST">
-            <label class="field-label" for="name">Routine Name</label>
-            <input type="text" id="name" name="name" class="auth-input mb-3" placeholder="e.g., Push Day, Leg Day" required>
+            <label class="field-label" for="name" data-i18n="programs.routine_name">Routine Name</label>
+            <input type="text" id="name" name="name" class="auth-input mb-3" data-i18n="programs.routine_name_placeholder" placeholder="e.g., Push Day, Leg Day" required>
             <button type="submit" class="btn-gainz w-100">
-                <i class="bi bi-plus-lg"></i> Create
+                <i class="bi bi-plus-lg"></i> <span data-i18n="programs.create">Create</span>
             </button>
         </form>
     </div>
@@ -52,7 +52,7 @@
                 <div class="routine-header">
                     <h6 class="routine-name">{{ program.name }}</h6>
                     <div class="routine-actions">
-                        <span class="routine-count">{{ program.workouts|length }} exercises</span>
+                        <span class="routine-count">{{ program.workout_count }} workouts · {{ program.exercise_count }} exercises</span>
                         <form method="POST" action="/EcomProject/public/programs/delete" class="routine-delete-form">
                             <input type="hidden" name="program_id" value="{{ program.id }}">
                             <button type="submit" class="btn-icon btn-delete" title="Delete routine">

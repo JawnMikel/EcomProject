@@ -14,12 +14,73 @@ class WorkoutSessionModel extends BaseModel
              COALESCE(total_volume, (SELECT COALESCE(SUM(reps * weight), 0) FROM workout_session_items WHERE session_id = workout_sessions.id)) as total_volume,
              notes
              FROM workout_sessions
-             WHERE user_id = ?
+             WHERE user_id = ? AND end_time IS NOT NULL
              ORDER BY start_time DESC
              LIMIT 10'
         );
         $stmt->execute([$userId]);
         return $stmt->fetchAll();
+    }
+
+    public function getRecentWithDetails(int $userId): array
+    {
+        // Get all sessions, with or without exercises
+        $stmt = $this->db->prepare(
+            'SELECT ws.id, ws.start_time, DATE(ws.start_time) AS session_date, ws.end_time,
+             COALESCE(ws.total_duration, TIMESTAMPDIFF(SECOND, ws.start_time, ws.end_time)) as total_duration,
+             COALESCE(ws.total_volume, (SELECT COALESCE(SUM(reps * weight), 0) FROM workout_session_items WHERE session_id = ws.id)) as total_volume,
+             ws.notes
+             FROM workout_sessions ws
+             WHERE ws.user_id = ?
+             ORDER BY ws.start_time DESC
+             LIMIT 10'
+        );
+        $stmt->execute([$userId]);
+        $sessions = $stmt->fetchAll();
+
+        // For each session, get exercises with sets
+        foreach ($sessions as &$session) {
+            $sessionId = $session['id'];
+
+            // Get exercises grouped with their sets
+            $exStmt = $this->db->prepare(
+                'SELECT e.id as exercise_id, e.name as exercise_name, c.name as category_name,
+                        wsi.id as set_id, wsi.set_number, wsi.reps, wsi.weight, wsi.set_type
+                 FROM workout_session_items wsi
+                 JOIN exercises e ON wsi.exercise_id = e.id
+                 LEFT JOIN categories c ON e.category_id = c.id
+                 WHERE wsi.session_id = ?
+                 ORDER BY wsi.id'
+            );
+            $exStmt->execute([$sessionId]);
+            $items = $exStmt->fetchAll();
+
+            // Group by exercise
+            $exercises = [];
+            foreach ($items as $item) {
+                if (empty($item['exercise_id'])) continue;
+                $exId = $item['exercise_id'];
+                if (!isset($exercises[$exId])) {
+                    $exercises[$exId] = [
+                        'exercise_id' => $item['exercise_id'],
+                        'exercise_name' => $item['exercise_name'] ?? 'Unknown Exercise',
+                        'category_name' => $item['category_name'] ?? '',
+                        'sets' => []
+                    ];
+                }
+                if ($item['set_id'] && $item['reps']) {
+                    $exercises[$exId]['sets'][] = [
+                        'set_number' => $item['set_number'],
+                        'reps' => $item['reps'],
+                        'weight' => $item['weight'],
+                        'set_type' => $item['set_type']
+                    ];
+                }
+            }
+            $session['exercises'] = array_values($exercises);
+        }
+
+        return $sessions;
     }
 
     public function createSession(int $userId, string $date, int $durationMinutes, ?float $volume, ?string $notes): int
@@ -45,6 +106,58 @@ class WorkoutSessionModel extends BaseModel
         );
         $stmt->execute([$userId, $year, $month]);
         return $stmt->fetchAll();
+    }
+
+    public function getSessionsWithDetailsForMonth(int $userId, int $year, int $month): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, start_time, total_duration, total_volume, notes
+             FROM workout_sessions
+             WHERE user_id = ? AND YEAR(start_time) = ? AND MONTH(start_time) = ?
+             ORDER BY start_time DESC'
+        );
+        $stmt->execute([$userId, $year, $month]);
+        $sessions = $stmt->fetchAll();
+
+        foreach ($sessions as &$session) {
+            $sessionId = $session['id'];
+            $exStmt = $this->db->prepare(
+                'SELECT e.id as exercise_id, e.name as exercise_name, c.name as category_name,
+                        wsi.id as set_id, wsi.set_number, wsi.reps, wsi.weight, wsi.set_type
+                 FROM workout_session_items wsi
+                 JOIN exercises e ON wsi.exercise_id = e.id
+                 LEFT JOIN categories c ON e.category_id = c.id
+                 WHERE wsi.session_id = ?
+                 ORDER BY wsi.id'
+            );
+            $exStmt->execute([$sessionId]);
+            $items = $exStmt->fetchAll();
+
+            $exercises = [];
+            foreach ($items as $item) {
+                if (empty($item['exercise_id'])) continue;
+                $exId = $item['exercise_id'];
+                if (!isset($exercises[$exId])) {
+                    $exercises[$exId] = [
+                        'exercise_id' => $item['exercise_id'],
+                        'exercise_name' => $item['exercise_name'] ?? 'Unknown',
+                        'category_name' => $item['category_name'] ?? '',
+                        'sets' => []
+                    ];
+                }
+                if ($item['set_id'] && $item['reps']) {
+                    $exercises[$exId]['sets'][] = [
+                        'set_number' => $item['set_number'],
+                        'reps' => $item['reps'],
+                        'weight' => $item['weight'],
+                        'set_type' => $item['set_type']
+                    ];
+                }
+            }
+            $session['exercises'] = array_values($exercises);
+        }
+
+        return $sessions;
     }
 
     public function startSession(int $userId, ?int $programWorkoutId = null): int

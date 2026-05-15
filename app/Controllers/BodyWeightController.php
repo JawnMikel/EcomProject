@@ -41,11 +41,10 @@ class BodyWeightController
         unset($_SESSION['flash_error'], $_SESSION['flash_success']);
 
         $data = (array) $request->getParsedBody();
-        $date = trim($data['entry_date'] ?? '');
         $weight = trim($data['weight_value'] ?? '');
 
-        if (!$date || !$weight) {
-            $_SESSION['flash_error'] = 'Please provide date and weight.';
+        if (!$weight) {
+            $_SESSION['flash_error'] = 'Please enter your weight.';
             return $response->withHeader('Location', '/EcomProject/public/body-weight')->withStatus(302);
         }
 
@@ -53,6 +52,9 @@ class BodyWeightController
             $_SESSION['flash_error'] = 'Enter a valid weight number.';
             return $response->withHeader('Location', '/EcomProject/public/body-weight')->withStatus(302);
         }
+
+        // Use today's date automatically
+        $date = date('Y-m-d');
 
         try {
             $this->weightModel->addEntry((int) $_SESSION['user_id'], $date, (float) $weight);

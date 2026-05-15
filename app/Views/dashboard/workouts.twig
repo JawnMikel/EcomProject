@@ -6,8 +6,8 @@
 <div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
 
 <div class="section-header">
-    <h1 class="section-title">Workouts</h1>
-    <p class="section-subtitle">Start a new workout or log a session</p>
+    <h1 class="section-title" data-i18n="workouts.title">Workouts</h1>
+    <p class="section-subtitle" data-i18n="workouts.subtitle">Start a new workout or log a session</p>
     <div class="section-title-bar"></div>
 </div>
 
@@ -25,12 +25,12 @@
 {% if active_session %}
 <div class="alert-gainz" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <i class="bi bi-exclamation-circle me-1"></i>You have an active workout in progress!
-        <a href="/EcomProject/public/workouts/active" class="btn btn-sm btn-warning ms-2">Continue Workout</a>
+        <i class="bi bi-exclamation-circle me-1"></i><span data-i18n="workouts.active_in_progress">You have an active workout in progress!</span>
+        <a href="/EcomProject/public/workouts/active" class="btn btn-sm btn-warning ms-2" data-i18n="workouts.continue_workout">Continue Workout</a>
     </div>
     <form method="POST" action="/EcomProject/public/workouts/cancel" style="display: inline;">
         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Cancel this workout? All progress will be lost.')">
-            <i class="bi bi-x-lg"></i> Cancel
+            <i class="bi bi-x-lg"></i> <span data-i18n="common.cancel">Cancel</span>
         </button>
     </form>
 </div>
@@ -44,25 +44,25 @@
                 <i class="bi bi-play-circle-fill"></i>
             </div>
             <h5 class="panel-card-title">
-                <i class="bi bi-lightning-charge"></i> Start Workout
+                <i class="bi bi-lightning-charge"></i> <span data-i18n="workouts.start_workout">Start Workout</span>
             </h5>
-            <p class="text-muted mb-3">Begin a new session to track exercises, sets, and reps.</p>
+            <p class="text-muted mb-3" data-i18n="workouts.start_description">Begin a new session to track exercises, sets, and reps.</p>
             {% if active_session %}
             <a href="/EcomProject/public/workouts/active" class="btn-gainz w-100">
-                <i class="bi bi-lightning-charge"></i> Continue Workout
+                <i class="bi bi-lightning-charge"></i> <span data-i18n="workouts.continue_workout">Continue Workout</span>
             </a>
             {% else %}
             <form method="POST" action="/EcomProject/public/workouts/start">
                 {% if programs %}
                 <select name="program_workout_id" id="program_workout_id" class="auth-input mb-3">
-                    <option value="">Empty Workout</option>
+                    <option value="" data-i18n="workouts.empty_workout">Empty Workout</option>
                     {% for program in programs %}
                     <option value="{{ program.id }}">{{ program.name }}</option>
                     {% endfor %}
                 </select>
                 {% endif %}
                 <button type="submit" class="btn-gainz w-100">
-                    <i class="bi bi-lightning-charge"></i> Start Now
+                    <i class="bi bi-lightning-charge"></i> <span data-i18n="workouts.start_now">Start Now</span>
                 </button>
             </form>
             {% endif %}
@@ -73,7 +73,7 @@
     <div class="workout-list-panel">
         <div class="panel-card">
             <h5 class="panel-card-title">
-                <i class="bi bi-list-ul"></i> Available Workouts
+                <i class="bi bi-list-ul"></i> <span data-i18n="workouts.available_workouts">Available Workouts</span>
             </h5>
             {% if programs %}
             <div class="workout-items">
@@ -81,19 +81,19 @@
                 <div class="workout-item">
                     <div class="workout-item-info">
                         <span class="workout-item-name">{{ program.name }}</span>
-                        <span class="workout-item-meta">{{ program.exercise_count ?? 0 }} exercises</span>
+                        <span class="workout-item-meta">{{ program.exercise_count ?? 0 }} <span data-i18n="common.exercises">exercises</span></span>
                     </div>
                     <form method="POST" action="/EcomProject/public/workouts/start" class="workout-item-action">
                         <input type="hidden" name="program_workout_id" value="{{ program.id }}">
                         <button type="submit" class="btn-gainz-outline btn-sm">
-                            <i class="bi bi-play"></i> Start
+                            <i class="bi bi-play"></i> <span data-i18n="workouts.start">Start</span>
                         </button>
                     </form>
                 </div>
                 {% endfor %}
             </div>
             {% else %}
-            <p class="text-muted mb-0 empty-state">No programs yet. Create one in Programs!</p>
+            <p class="text-muted mb-0 empty-state" data-i18n="workouts.no_programs">No programs yet. Create one in Programs!</p>
             {% endif %}
         </div>
     </div>

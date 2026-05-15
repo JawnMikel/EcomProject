@@ -22,6 +22,21 @@ class TrainingProgramModel extends BaseModel
     {
         $programs = $this->getByUser($userId);
 
+        if (empty($programs)) {
+            return $programs;
+        }
+
+        // Get workout counts for each program
+        $placeholders = implode(',', array_fill(0, count($programs), '?'));
+        $stmt = $this->db->prepare(
+            "SELECT program_id, COUNT(*) as workout_count FROM program_workouts WHERE program_id IN ($placeholders) GROUP BY program_id"
+        );
+        $stmt->execute(array_column($programs, 'id'));
+        $workoutCounts = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $workoutCounts[$row['program_id']] = (int) $row['workout_count'];
+        }
+
         // Get all workouts with their exercises
         $stmt = $this->db->prepare(
             'SELECT pw.id, pw.program_id, pw.day_number, pw.workout_name,
@@ -56,7 +71,10 @@ class TrainingProgramModel extends BaseModel
         }
 
         foreach ($programs as &$program) {
-            $program['workouts'] = $workoutMap[$program['id']] ?? [];
+            $pid = $program['id'];
+            $program['workouts'] = $workoutMap[$pid] ?? [];
+            $program['workout_count'] = $workoutCounts[$pid] ?? 0;
+            $program['exercise_count'] = count($workoutMap[$pid] ?? []);
         }
 
         return $programs;
@@ -82,7 +100,8 @@ class TrainingProgramModel extends BaseModel
     public function getExplorePrograms(?string $goal = null, ?string $difficulty = null, ?string $environment = null): array
     {
         $sql = 'SELECT tp.id, tp.name, tp.description, tp.difficulty, tp.environment, tp.goal,
-                       pw.id as workout_id, e.name as exercise_name, c.name as category_name,
+                       pw.id as workout_id, pw.workout_name,
+                       pwe.id as pwe_id, pwe.exercise_id, e.name as exercise_name, c.name as category_name,
                        pwe.target_sets, pwe.target_reps
                 FROM training_programs tp
                 LEFT JOIN program_workouts pw ON tp.id = pw.program_id
@@ -127,25 +146,31 @@ class TrainingProgramModel extends BaseModel
                     'exercise_count' => 0
                 ];
             }
-            if ($row['exercise_name']) {
+            // Check for exercise - use pwe_id as fallback if exercise_name is null (missing exercise seed data)
+            if ($row['pwe_id']) {
                 $programs[$pid]['exercise_count']++;
                 // Group by workout
                 $wid = $row['workout_id'] ?? 'default';
                 if (!isset($programs[$pid]['workouts'][$wid])) {
-                    $programs[$pid]['workouts'][$wid] = [];
+                    $programs[$pid]['workouts'][$wid] = [
+                        'workout_name' => $row['workout_name'] ?? 'Workout',
+                        'exercises' => []
+                    ];
                 }
-                $programs[$pid]['workouts'][$wid][] = [
-                    'exercise_name' => $row['exercise_name'],
-                    'category_name' => $row['category_name'],
+                // Use exercise_name from JOIN, or fallback to "Exercise #N" if missing
+                $programs[$pid]['workouts'][$wid]['exercises'][] = [
+                    'exercise_name' => $row['exercise_name'] ?? 'Exercise (ID: ' . $row['exercise_id'] . ')',
+                    'category_name' => $row['category_name'] ?? 'Uncategorized',
                     'target_sets' => $row['target_sets'],
                     'target_reps' => $row['target_reps']
                 ];
             }
         }
 
-        // Convert workouts sub-array to regular array
+        // Convert workouts sub-array to regular array and add workout count
         foreach ($programs as &$p) {
             $p['workouts'] = array_values($p['workouts']);
+            $p['workout_count'] = count($p['workouts']);
         }
 
         return array_values($programs);

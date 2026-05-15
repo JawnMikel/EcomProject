@@ -69,7 +69,7 @@
             <span class="exercises-label">{{ program.workouts|length }} workouts · {{ program.exercise_count }} exercises</span>
             <div class="exercise-tags">
                 {% for workout in program.workouts[:3] %}
-                    {% for ex in workout[:2] %}
+                    {% for ex in workout.exercises[:2] %}
                     <span class="exercise-tag">{{ ex.exercise_name }}</span>
                     {% endfor %}
                 {% endfor %}

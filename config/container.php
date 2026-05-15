@@ -48,7 +48,8 @@ return function (ContainerBuilder $builder) {
                 $c->get(Twig::class),
                 $c->get(App\Models\WorkoutSessionModel::class),
                 $c->get(App\Models\BodyWeightEntryModel::class),
-                $c->get(App\Models\TrainingProgramModel::class)
+                $c->get(App\Models\TrainingProgramModel::class),
+                $c->get(App\Models\UserModel::class)
             );
         },
 
@@ -57,7 +58,28 @@ return function (ContainerBuilder $builder) {
                 $c->get(Twig::class),
                 $c->get(App\Models\TrainingProgramModel::class),
                 $c->get(App\Models\ExerciseModel::class),
-                $c->get(App\Models\WorkoutSessionModel::class)
+                $c->get(App\Models\WorkoutSessionModel::class),
+                $c->get(App\Models\UserModel::class)
+            );
+        },
+
+        App\Controllers\WorkoutController::class => function (ContainerInterface $c) {
+            return new App\Controllers\WorkoutController(
+                $c->get(Twig::class),
+                $c->get(App\Models\WorkoutSessionModel::class),
+                $c->get(App\Models\ExerciseModel::class),
+                $c->get(App\Models\TrainingProgramModel::class),
+                $c->get(App\Models\UserModel::class)
+            );
+        },
+
+        App\Controllers\AnalyticsController::class => function (ContainerInterface $c) {
+            return new App\Controllers\AnalyticsController(
+                $c->get(Twig::class),
+                $c->get(App\Models\WorkoutSessionModel::class),
+                $c->get(App\Models\BodyWeightEntryModel::class),
+                $c->get(App\Models\TrainingProgramModel::class),
+                $c->get(App\Models\UserModel::class)
             );
         },
 

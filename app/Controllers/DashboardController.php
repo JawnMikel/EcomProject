@@ -7,23 +7,36 @@ namespace App\Controllers;
 use App\Models\BodyWeightEntryModel;
 use App\Models\TrainingProgramModel;
 use App\Models\WorkoutSessionModel;
+use App\Models\UserModel;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
 class DashboardController
 {
+    private string $basePath = '/EcomProject/public';
+
     public function __construct(
         private Twig $view,
         private WorkoutSessionModel $workoutSessionModel,
         private BodyWeightEntryModel $bodyWeightEntryModel,
         private TrainingProgramModel $trainingProgramModel,
+        private UserModel $userModel
     ) {}
 
     public function index(Request $request, Response $response): Response
     {
-        if (empty($_SESSION['user_id'])) {
-            return $response->withHeader('Location', '/EcomProject/public/login')->withStatus(302);
+        $userId = $_SESSION['user_id'] ?? null;
+        if (!$userId) {
+            return $response->withHeader('Location', $this->basePath . '/login')->withStatus(302);
+        }
+
+        // Verify user exists in database
+        $user = $this->userModel->findById($userId);
+        if (!$user) {
+            session_destroy();
+            $_SESSION['flash_error'] = 'Session expired. Please log in again.';
+            return $response->withHeader('Location', $this->basePath . '/login')->withStatus(302);
         }
 
         // Sync start_time from database if there's an active workout
@@ -34,7 +47,7 @@ class DashboardController
 
         $userId = (int) $_SESSION['user_id'];
         $workoutStats = $this->workoutSessionModel->getStatsForUser($userId);
-        $recentWorkouts = $this->workoutSessionModel->getRecentByUser($userId);
+        $recentWorkouts = $this->workoutSessionModel->getRecentWithDetails($userId);
         $latestWeight = $this->bodyWeightEntryModel->getLatestWeight($userId);
         $programCount = $this->trainingProgramModel->countByUser($userId);
 
@@ -72,7 +85,7 @@ class DashboardController
             $latestWorkoutBadge = 'Latest workout';
         }
 
-        $weightLabel = $latestWeight !== null ? sprintf('%0.1f kg', $latestWeight) : 'No weight recorded';
+        $weightLabel = $latestWeight !== null ? sprintf('%0.1f lbs', $latestWeight) : 'No weight recorded';
         $weightHint = $latestWeight !== null
             ? 'Based on your most recent entry.'
             : 'Record your weight to track progress.';
@@ -94,6 +107,7 @@ class DashboardController
             'latestWeight' => $weightLabel,
             'weightHint' => $weightHint,
             'programCount' => $programCount,
+            'recentWorkouts' => $recentWorkouts,
             'recommendedSupplements' => [
                 ['name' => 'Whey Isolate', 'benefit' => 'Fast-absorbing protein support after training.', 'tag' => 'Top Pick'],
                 ['name' => 'Creatine Monohydrate', 'benefit' => 'Strength and power support for heavier lifts.', 'tag' => 'Daily'],
@@ -112,8 +126,17 @@ class DashboardController
 
     public function calendar(Request $request, Response $response): Response
     {
-        if (empty($_SESSION['user_id'])) {
-            return $response->withHeader('Location', '/EcomProject/public/login')->withStatus(302);
+        $userId = $_SESSION['user_id'] ?? null;
+        if (!$userId) {
+            return $response->withHeader('Location', $this->basePath . '/login')->withStatus(302);
+        }
+
+        // Verify user exists in database
+        $user = $this->userModel->findById($userId);
+        if (!$user) {
+            session_destroy();
+            $_SESSION['flash_error'] = 'Session expired. Please log in again.';
+            return $response->withHeader('Location', $this->basePath . '/login')->withStatus(302);
         }
 
         $params = $request->getQueryParams();
@@ -122,7 +145,7 @@ class DashboardController
         $month = max(1, min(12, $month));
 
         $userId = (int) $_SESSION['user_id'];
-        $workouts = $this->workoutSessionModel->getSessionsForMonth($userId, $year, $month);
+        $workouts = $this->workoutSessionModel->getSessionsWithDetailsForMonth($userId, $year, $month);
 
         return $this->view->render($response, 'dashboard/calendar.twig', [
             'username' => $_SESSION['username'],

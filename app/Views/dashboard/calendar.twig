@@ -47,7 +47,7 @@
                 {% for day in 1..daysInMonth %}
                     {% set currentDate = year ~ '-' ~ (month < 10 ? '0' ~ month : month) ~ '-' ~ (day < 10 ? '0' ~ day : day) %}
                     {% set hasWorkout = workoutDates[currentDate] is defined %}
-                    <div class="calendar-cell {% if hasWorkout %}has-workout{% endif %}">
+                    <div class="calendar-cell {% if hasWorkout %}has-workout{% endif %} clickable-day" data-date="{{ currentDate }}">
                         <span class="day-number">{{ day }}</span>
                     </div>
                 {% endfor %}
@@ -85,6 +85,72 @@
     <p class="empty-state">No workouts this month. Time to train!</p>
     {% endif %}
 </div>
+
+<!-- Workout Detail Modal -->
+<div id="workoutModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <h3 id="modalDate"></h3>
+        <div id="modalWorkoutDetails"></div>
+    </div>
+</div>
+
+<script>
+const workouts = {{ workouts|json_encode|raw }};
+
+document.querySelectorAll('.clickable-day').forEach(cell => {
+    cell.addEventListener('click', function() {
+        const date = this.dataset.date;
+        showWorkoutDetails(date);
+    });
+});
+
+function showWorkoutDetails(date) {
+    const workout = workouts.find(w => w.start_time && w.start_time.startsWith(date));
+    const modal = document.getElementById('workoutModal');
+    const modalDate = document.getElementById('modalDate');
+    const modalDetails = document.getElementById('modalWorkoutDetails');
+
+    if (workout) {
+        modalDate.textContent = new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        let html = '<div class="workout-meta">';
+        html += '<span><i class="bi bi-clock"></i> ' + Math.round(workout.total_duration / 60) + ' min</span>';
+        html += '<span><i class="bi bi-speedometer2"></i> ' + (workout.total_volume ? Math.round(workout.total_volume) + ' lbs' : '—') + '</span>';
+        html += '</div>';
+
+        if (workout.exercises && workout.exercises.length > 0) {
+            html += '<div class="workout-exercises-list">';
+            workout.exercises.forEach(ex => {
+                html += '<div class="exercise-item">';
+                html += '<div class="exercise-name">' + ex.exercise_name + '</div>';
+                html += '<div class="exercise-sets">';
+                ex.sets.forEach(set => {
+                    html += '<span class="set-badge">' + set.reps + ' reps × ' + set.weight + ' lbs</span>';
+                });
+                html += '</div></div>';
+            });
+            html += '</div>';
+        } else {
+            html += '<p class="text-muted">No exercises logged</p>';
+        }
+        modalDetails.innerHTML = html;
+    } else {
+        modalDate.textContent = new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        modalDetails.innerHTML = '<p class="text-muted">No workout on this day</p>';
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('workoutModal').style.display = 'none';
+}
+
+document.getElementById('workoutModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+</script>
 
 <style>
 /* Center everything - fit in portrait 1080x1920 */
@@ -309,6 +375,98 @@
     color: #444;
     padding: 0.5rem;
     font-size: 0.75rem;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    color: var(--accent);
+}
+
+.modal-content h3 {
+    color: var(--text);
+    margin-bottom: 1rem;
+    padding-right: 1.5rem;
+}
+
+.workout-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.workout-exercises-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.exercise-item {
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.75rem;
+}
+
+.exercise-item .exercise-name {
+    font-weight: 600;
+    color: #ccc;
+    margin-bottom: 0.5rem;
+}
+
+.exercise-sets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.set-badge {
+    font-size: 0.75rem;
+    color: #888;
+    background: #151515;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+}
+
+.calendar-cell.clickable-day {
+    cursor: pointer;
 }
 </style>
 {% endblock %}

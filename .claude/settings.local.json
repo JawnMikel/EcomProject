@@ -9,7 +9,10 @@
     "allow": [
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(composer install *)"
+      "Bash(composer install *)",
+      "Bash(php -r ' *)",
+      "Bash(mysql *)",
+      "PowerShell(Get-Command *)"
     ]
   }
 }
