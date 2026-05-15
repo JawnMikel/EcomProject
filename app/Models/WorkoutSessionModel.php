@@ -9,7 +9,7 @@ class WorkoutSessionModel extends BaseModel
     public function getRecentByUser(int $userId): array
     {
         $stmt = $this->db->prepare(
-            'SELECT id, start_time, end_time,
+            'SELECT id, start_time, DATE(start_time) AS session_date, end_time,
              COALESCE(total_duration, TIMESTAMPDIFF(SECOND, start_time, end_time)) as total_duration,
              COALESCE(total_volume, (SELECT COALESCE(SUM(reps * weight), 0) FROM workout_session_items WHERE session_id = workout_sessions.id)) as total_volume,
              notes
@@ -33,6 +33,18 @@ class WorkoutSessionModel extends BaseModel
         );
         $stmt->execute([$userId, $startTime, $totalDuration, $volume, $notes]);
         return (int) $this->db->lastInsertId();
+    }
+
+    public function getSessionsForMonth(int $userId, int $year, int $month): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, start_time, total_duration, total_volume, notes
+             FROM workout_sessions
+             WHERE user_id = ? AND YEAR(start_time) = ? AND MONTH(start_time) = ?
+             ORDER BY start_time DESC'
+        );
+        $stmt->execute([$userId, $year, $month]);
+        return $stmt->fetchAll();
     }
 
     public function startSession(int $userId, ?int $programWorkoutId = null): int

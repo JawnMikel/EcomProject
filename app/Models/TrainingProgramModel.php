@@ -69,7 +69,7 @@ class TrainingProgramModel extends BaseModel
         return $stmt->fetch();
     }
 
-    public function create(int $userId, string $name, string $description, string $difficulty = 'beginner', string $environment = 'gym', string $goal = null): int
+    public function create(int $userId, string $name, string $description, string $difficulty = 'beginner', string $environment = 'gym', ?string $goal = null): int
     {
         $stmt = $this->db->prepare(
             'INSERT INTO training_programs (user_id, name, description, is_system_template, difficulty, environment, goal)
@@ -215,7 +215,7 @@ class TrainingProgramModel extends BaseModel
         return (int) $this->db->lastInsertId();
     }
 
-    public function addExerciseToProgram(int $programId, int $exerciseId, int $sets = null, int $reps = null): int
+    public function addExerciseToProgram(int $programId, int $exerciseId, ?int $sets = null, ?int $reps = null): int
     {
         // Get or create default workout for this program
         $stmt = $this->db->prepare(

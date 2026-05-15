@@ -39,19 +39,21 @@ return function (ContainerBuilder $builder) {
             return new \App\Models\ExerciseModel($c->get(PDO::class));
         },
 
-        \App\Models\WorkoutSessionModel::class => function (ContainerInterface $c) {
-            return new \App\Models\WorkoutSessionModel($c->get(PDO::class));
-        },
+        App\Models\WorkoutSessionModel::class => fn(ContainerInterface $c) => new App\Models\WorkoutSessionModel($c->get(PDO::class)),
+        App\Models\BodyWeightEntryModel::class => fn(ContainerInterface $c) => new App\Models\BodyWeightEntryModel($c->get(PDO::class)),
+        App\Models\TrainingProgramModel::class => fn(ContainerInterface $c) => new App\Models\TrainingProgramModel($c->get(PDO::class)),
 
-        \App\Models\TrainingProgramModel::class => function (ContainerInterface $c) {
-            return new \App\Models\TrainingProgramModel($c->get(PDO::class));
+        App\Controllers\DashboardController::class => function (ContainerInterface $c) {
+            return new App\Controllers\DashboardController(
+                $c->get(Twig::class),
+                $c->get(App\Models\WorkoutSessionModel::class),
+                $c->get(App\Models\BodyWeightEntryModel::class),
+                $c->get(App\Models\TrainingProgramModel::class)
+            );
         },
 
         TwoFactorService::class => fn(ContainerInterface $c) => new TwoFactorService($c->get(PDO::class)),
         App\Models\UserModel::class => fn(ContainerInterface $c) => new App\Models\UserModel($c->get(PDO::class)),
-        App\Models\WorkoutSessionModel::class => fn(ContainerInterface $c) => new App\Models\WorkoutSessionModel($c->get(PDO::class)),
-        App\Models\BodyWeightEntryModel::class => fn(ContainerInterface $c) => new App\Models\BodyWeightEntryModel($c->get(PDO::class)),
-        App\Models\TrainingProgramModel::class => fn(ContainerInterface $c) => new App\Models\TrainingProgramModel($c->get(PDO::class)),
 
     ]);
 };

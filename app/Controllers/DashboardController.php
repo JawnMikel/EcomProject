@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Models\BodyWeightEntryModel;
+use App\Models\TrainingProgramModel;
+use App\Models\WorkoutSessionModel;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -11,7 +14,10 @@ use Slim\Views\Twig;
 class DashboardController
 {
     public function __construct(
-        private Twig $view
+        private Twig $view,
+        private WorkoutSessionModel $workoutSessionModel,
+        private BodyWeightEntryModel $bodyWeightEntryModel,
+        private TrainingProgramModel $trainingProgramModel,
     ) {}
 
     public function index(Request $request, Response $response): Response
@@ -28,7 +34,17 @@ class DashboardController
 
         $workoutStreak = 0;
         $lastDate = null;
+        $latestWorkout = null;
+
         foreach ($recentWorkouts as $workout) {
+            if (empty($workout['session_date'])) {
+                continue;
+            }
+
+            if ($latestWorkout === null) {
+                $latestWorkout = $workout;
+            }
+
             $date = new \DateTime($workout['session_date']);
             if ($lastDate === null) {
                 $workoutStreak = 1;
@@ -45,8 +61,8 @@ class DashboardController
 
         $latestWorkoutLabel = 'No workouts logged yet';
         $latestWorkoutBadge = 'Start one now';
-        if (!empty($recentWorkouts)) {
-            $latestWorkoutLabel = sprintf('%s — %dm', $recentWorkouts[0]['session_date'], (int) round($recentWorkouts[0]['total_duration'] / 60));
+        if ($latestWorkout !== null) {
+            $latestWorkoutLabel = sprintf('%s — %dm', $latestWorkout['session_date'], (int) round($latestWorkout['total_duration'] / 60));
             $latestWorkoutBadge = 'Latest workout';
         }
 
@@ -85,6 +101,30 @@ class DashboardController
             'focusTip' => $workoutStats['total_workouts'] > 0
                 ? 'You are building real momentum. Keep logging each session and keep your form tight.'
                 : 'Get started with your first workout and a body weight entry to make every metric count.',
+        ]);
+    }
+
+    public function calendar(Request $request, Response $response): Response
+    {
+        if (empty($_SESSION['user_id'])) {
+            return $response->withHeader('Location', '/EcomProject/public/login')->withStatus(302);
+        }
+
+        $params = $request->getQueryParams();
+        $month = isset($params['month']) ? (int) $params['month'] : (int) date('n');
+        $year = isset($params['year']) ? (int) $params['year'] : (int) date('Y');
+        $month = max(1, min(12, $month));
+
+        $userId = (int) $_SESSION['user_id'];
+        $workouts = $this->workoutSessionModel->getSessionsForMonth($userId, $year, $month);
+
+        return $this->view->render($response, 'dashboard/calendar.twig', [
+            'username' => $_SESSION['username'],
+            'role' => $_SESSION['user_role'],
+            'title' => 'Calendar',
+            'year' => $year,
+            'month' => $month,
+            'workouts' => $workouts,
         ]);
     }
 }

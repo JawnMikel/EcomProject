@@ -298,44 +298,6 @@
         </div>
     </div>
 </div>
-{% endblock %}
-                {% for entry in weight_trend|reverse %}
-                <div class="chart-bar-wrapper">
-                    <div class="chart-bar" style="height: {{ range > 0 ? ((entry.weight_value - weight_min) / range * 100)|round : 50 }}%">
-                        <span class="chart-tooltip">{{ (entry.weight_value * 2.20462)|round(1) }} lbs</span>
-                    </div>
-                    <span class="chart-label">{{ entry.entry_date|date('m/d') }}</span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% else %}
-        <p class="empty-state">No weight data yet. Start tracking!</p>
-        {% endif %}
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="panel-card activity-panel">
-        <h5 class="panel-card-title">
-            <i class="bi bi-clock-history"></i> Recent Activity
-        </h5>
-        {% if recent_sessions %}
-        <div class="activity-list">
-            {% for session in recent_sessions[:5] %}
-            <div class="activity-item">
-                <div class="activity-date">{{ session.start_time|date('M j, g:i a') }}</div>
-                <div class="activity-details">
-                    <span class="activity-duration">{{ (session.total_duration / 60)|round(0) }} min</span>
-                    <span class="activity-volume">{{ session.total_volume ? session.total_volume ~ ' lbs' : '—' }}</span>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p class="empty-state">No workouts yet. Start your first one!</p>
-        {% endif %}
-    </div>
-</div>
 
 <style>
 .stats-bar {
