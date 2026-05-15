@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Models\BodyWeightEntryModel;
-use App\Models\TrainingProgramModel;
-use App\Models\WorkoutSessionModel;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -14,15 +11,11 @@ use Slim\Views\Twig;
 class DashboardController
 {
     public function __construct(
-        private Twig $view,
-        private WorkoutSessionModel $workoutSessionModel,
-        private BodyWeightEntryModel $bodyWeightEntryModel,
-        private TrainingProgramModel $trainingProgramModel,
+        private Twig $view
     ) {}
 
     public function index(Request $request, Response $response): Response
     {
-        // Simple security check: redirect to login if no session exists
         if (empty($_SESSION['user_id'])) {
             return $response->withHeader('Location', '/EcomProject/public/login')->withStatus(302);
         }

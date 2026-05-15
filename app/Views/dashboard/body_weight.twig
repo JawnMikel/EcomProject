@@ -36,9 +36,9 @@
                     </div>
                 </div>
                 <div>
-                    <label class="field-label" for="weight_value">Weight (kg)</label>
+                    <label class="field-label" for="weight_value">Weight (lbs)</label>
                     <div class="field-wrap">
-                        <input type="number" id="weight_value" name="weight_value" class="auth-input" step="0.1" placeholder="Weight in kg" required>
+                        <input type="number" id="weight_value" name="weight_value" class="auth-input" step="0.1" placeholder="Weight in lbs" required>
                     </div>
                 </div>
                 <button type="submit" class="btn-gainz">Save Entry</button>
@@ -62,7 +62,7 @@
                     {% for entry in entries %}
                     <tr>
                         <td>{{ entry.entry_date }}</td>
-                        <td>{{ entry.weight_value }} kg</td>
+                        <td>{{ (entry.weight_value * 2.20462)|round(1) }} lbs</td>
                     </tr>
                     {% endfor %}
                 </tbody>

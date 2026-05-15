@@ -1,0 +1,1062 @@
+{% extends "layout/base.twig" %}
+
+{% block title %}Active Workout — GAINZ{% endblock %}
+
+{% block content %}
+<div class="compact-page">
+<div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
+
+<div class="section-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 class="section-title">Active Workout</h1>
+            <p class="section-subtitle">Add exercises and track your sets</p>
+        </div>
+        <form method="POST" action="/EcomProject/public/workouts/cancel">
+            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Cancel this workout? All progress will be lost.')">
+                <i class="bi bi-x-lg"></i> Cancel Workout
+            </button>
+        </form>
+    </div>
+    <div class="section-title-bar"></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="panel-card mb-3">
+            <h5 class="panel-card-title">
+                <i class="bi bi-dumbbell"></i> Exercises
+            </h5>
+
+            {% if exercises is empty %}
+            <div class="text-center py-4">
+                <p class="text-muted mb-3">No exercises added yet. Click the button below to add exercises.</p>
+            </div>
+            {% else %}
+            <div class="exercise-list">
+                {% for exerciseId, data in exercise_details %}
+                <div class="exercise-item mb-3">
+                    <div class="exercise-header">
+                        <div class="exercise-title-row">
+                            <h6 class="exercise-name">{{ data.info.name }}</h6>
+                            <span class="badge-difficulty badge-{{ data.info.difficulty }}">{{ data.info.difficulty }}</span>
+                            {% if data.target_sets and data.target_reps %}
+                            <span class="badge-program-target">{{ data.target_sets }}×{{ data.target_reps }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="rest-setting">
+                            <label>Rest:</label>
+                            <select class="rest-select" onchange="saveRestTime({{ exerciseId }}, this.value)">
+                                <option value="30" {% if data.info.rest_time|default(60) == 30 %}selected{% endif %}>30s</option>
+                                <option value="60" {% if data.info.rest_time|default(60) == 60 %}selected{% endif %}>60s</option>
+                                <option value="90" {% if data.info.rest_time|default(60) == 90 %}selected{% endif %}>90s</option>
+                                <option value="120" {% if data.info.rest_time|default(60) == 120 %}selected{% endif %}>2m</option>
+                                <option value="180" {% if data.info.rest_time|default(60) == 180 %}selected{% endif %}>3m</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="sets-list">
+                        <!-- Column Headers -->
+                        <div class="sets-header-row">
+                            <div class="col-set">SET</div>
+                            <div class="col-weight"><i class="bi bi-dumbbell"></i> LBS</div>
+                            <div class="col-reps">REPS</div>
+                            <div class="col-actions"><i class="bi bi-check-lg"></i></div>
+                        </div>
+
+                        {% for set in data.sets %}
+                        <div class="set-row {% if set.completed|default(false) %}set-completed{% endif %}">
+                            <div class="col-set set-number">{{ set.set_number }}</div>
+                            <div class="col-weight">
+                                <input type="number" class="set-input" value="{{ set.weight }}" step="0.5" min="0" onchange="updateSet({{ set.id }}, 'weight', this.value)">
+                            </div>
+                            <div class="col-reps">
+                                <input type="number" class="set-input" value="{{ set.reps }}" min="0" onchange="updateSet({{ set.id }}, 'reps', this.value)">
+                            </div>
+                            <div class="col-actions">
+                                <button type="button" class="btn-done {% if set.completed|default(false) %}done{% endif %}" onclick="markSetDone({{ set.id }}, {{ exerciseId }})">
+                                    <i class="bi {% if set.completed|default(false) %}bi-check-square-fill{% else %}bi-square{% endif %}"></i>
+                                </button>
+                                <form method="POST" action="/EcomProject/public/workouts/delete-set" style="display:inline;">
+                                    <input type="hidden" name="set_id" value="{{ set.id }}">
+                                    <button type="submit" class="btn-delete-set" title="Delete set">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Add Set Button -->
+                        <form method="POST" action="/EcomProject/public/workouts/add-set" class="add-set-btn-row">
+                            <input type="hidden" name="exercise_id" value="{{ exerciseId }}">
+                            <input type="number" name="reps" class="add-set-input" placeholder="Reps" min="1" required>
+                            <input type="number" name="weight" class="add-set-input" placeholder="lbs" step="0.5" min="0">
+                            <button type="submit" class="btn-add-set-simple">
+                                <i class="bi bi-plus-lg"></i> Add Set
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <button class="btn-gainz mt-2" onclick="toggleExercisePanel()">
+                <i class="bi bi-plus-circle"></i> Add Exercise
+            </button>
+        </div>
+    </div>
+
+    <!-- Exercise Picker Panel -->
+    <div id="exercisePickerOverlay" class="exercise-picker-panel overlay" style="display: none;" onclick="toggleExercisePanel()"></div>
+    <div id="exercisePickerPanel" class="exercise-picker-panel" style="display: none;">
+        <div class="panel-header">
+            <h5>Select Exercise</h5>
+            <button type="button" onclick="toggleExercisePanel()" class="btn-close btn-close-white"></button>
+        </div>
+        <div class="panel-body">
+            {% if all_exercises %}
+            <input type="text" id="exerciseSearch" class="auth-input w-100 mb-3" placeholder="Search exercises...">
+            <div class="exercise-grid" id="exerciseGrid">
+                {% for exercise in all_exercises %}
+                <button type="button" class="exercise-select-btn" onclick="addExercise({{ exercise.id }})">
+                    <span class="exercise-select-name">{{ exercise.name }}</span>
+                    <span class="exercise-select-category">{{ exercise.category_name }}</span>
+                </button>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">No exercises available.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="sidebar-stack">
+            <div class="timer-bar">
+                <div class="timer-block">
+                    <button type="button" class="timer-control-btn" id="timerToggleBtn" onclick="toggleTimer()">
+                        <i class="bi bi-play-fill" id="timerIcon"></i>
+                    </button>
+                    <span class="timer-display" id="mainTimer">00:00</span>
+                </div>
+                <div class="rest-block" id="restBlock" style="display: none;">
+                    <span class="rest-label">REST</span>
+                    <span class="rest-countdown" id="restCountdown">00:00</span>
+                </div>
+            </div>
+
+            <div class="custom-timer-bar">
+                <span class="timer-label">Custom Timer:</span>
+                <div class="custom-timer-inputs">
+                    <input type="number" id="customMin" class="timer-input" placeholder="0" min="0" max="99" value="0">
+                    <span class="timer-sep">:</span>
+                    <input type="number" id="customSec" class="timer-input" placeholder="30" min="0" max="59" value="30">
+                </div>
+                <button type="button" class="timer-start-btn" onclick="startCustomTimer()">
+                    <i class="bi bi-play-fill"></i>
+                </button>
+            </div>
+
+            <div class="rest-controls-bar">
+                <span class="rest-label">Quick Rest:</span>
+                <button type="button" class="rest-btn-chip" onclick="startRestTimer(30)">30s</button>
+                <button type="button" class="rest-btn-chip" onclick="startRestTimer(60)">60s</button>
+                <button type="button" class="rest-btn-chip" onclick="startRestTimer(90)">90s</button>
+                <button type="button" class="rest-btn-chip" onclick="startRestTimer(120)">2m</button>
+            </div>
+
+            <form method="POST" action="/EcomProject/public/workouts/complete" class="finish-bar" onsubmit="localStorage.removeItem('exerciseRestTimes');">
+                <button type="submit" class="btn-finish">
+                    <i class="bi bi-check-lg"></i> Finish Workout
+                </button>
+            </form>
+            <a href="/EcomProject/public/workouts" class="cancel-link">Cancel</a>
+        </div>
+    </div>
+</div>
+
+<form id="addExerciseForm" method="POST" action="/EcomProject/public/workouts/add-exercise" style="display: none;">
+    <input type="hidden" name="exercise_id" id="selectedExerciseId">
+</form>
+
+<script>
+function addExercise(exerciseId) {
+    document.getElementById('selectedExerciseId').value = exerciseId;
+    document.getElementById('addExerciseForm').submit();
+}
+
+function toggleExercisePanel() {
+    const panel = document.getElementById('exercisePickerPanel');
+    const overlay = document.getElementById('exercisePickerOverlay');
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'flex';
+        overlay.style.display = 'block';
+    } else {
+        panel.style.display = 'none';
+        overlay.style.display = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize rest select values from localStorage
+    document.querySelectorAll('.rest-select').forEach(function(select) {
+        const exerciseId = select.getAttribute('onchange').match(/\d+/)[0];
+        if (exerciseRestTimes[exerciseId]) {
+            select.value = exerciseRestTimes[exerciseId];
+        }
+    });
+
+    const searchInput = document.getElementById('exerciseSearch');
+    const exerciseGrid = document.getElementById('exerciseGrid');
+    const exerciseButtons = exerciseGrid ? exerciseGrid.querySelectorAll('.exercise-select-btn') : [];
+
+    if (searchInput && exerciseGrid) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            exerciseButtons.forEach(function(btn) {
+                const name = btn.querySelector('.exercise-select-name').textContent.toLowerCase();
+                const category = btn.querySelector('.exercise-select-category').textContent.toLowerCase();
+                if (name.includes(searchTerm) || category.includes(searchTerm)) {
+                    btn.style.display = 'flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+
+<style>
+.compact-page {
+    padding-top: 0.5rem;
+}
+.compact-page .section-header {
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0;
+}
+.compact-page .section-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+.compact-page .section-subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+.compact-page .section-title-bar {
+    margin-bottom: 0.75rem;
+}
+
+.sidebar-stack {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.timer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.timer-block {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #888;
+}
+
+.timer-control-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #000;
+}
+
+.timer-control-btn:hover {
+    transform: scale(1.1);
+}
+
+.timer-block i {
+    font-size: 0.9rem;
+}
+
+.timer-block .timer-display {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.5rem;
+    color: var(--accent);
+}
+
+.custom-timer-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.timer-label {
+    font-size: 0.65rem;
+    color: #888;
+}
+
+.custom-timer-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.timer-input {
+    width: 36px;
+    padding: 0.2rem 0.3rem;
+    font-size: 0.75rem;
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: #fff;
+    text-align: center;
+}
+
+.timer-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.timer-sep {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.timer-start-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #000;
+    font-size: 0.7rem;
+}
+
+.timer-start-btn:hover {
+    background: #ff6b35;
+}
+
+.rest-block {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--accent);
+    border-radius: 4px;
+}
+
+.rest-block .rest-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #000;
+}
+
+.rest-block .rest-countdown {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000;
+}
+
+.rest-controls-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.rest-controls-bar .rest-label {
+    font-size: 0.7rem;
+    color: #888;
+    margin-right: 0.25rem;
+}
+
+.rest-btn-chip {
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    color: #aaa;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.rest-btn-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.rest-btn-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+}
+
+.finish-bar {
+    margin-top: 0.5rem;
+}
+
+.btn-finish {
+    width: 100%;
+    padding: 0.6rem;
+    background: linear-gradient(135deg, var(--accent), #ff6b35);
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-finish:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+}
+
+.cancel-link {
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.5rem;
+    text-decoration: none;
+}
+
+.cancel-link:hover {
+    color: #888;
+}
+
+.exercise-item {
+    padding: 0.6rem;
+    background: var(--panel-bg);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-bottom: 0.6rem;
+}
+
+.exercise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.exercise-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.exercise-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.rest-setting {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.rest-setting label {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.rest-select {
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    position: relative;
+    z-index: 9999;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding-right: 1.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.4rem center;
+}
+
+.badge-difficulty {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.badge-beginner { background: #22c55e; color: #000; }
+.badge-intermediate { background: #f59e0b; color: #000; }
+.badge-advanced { background: #ef4444; color: #fff; }
+
+.badge-program-target {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+/* --- SETS LIST GRID LAYOUT --- */
+.sets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Base grid template */
+.sets-header-row,
+.set-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr 70px;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.sets-header-row {
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.2rem;
+}
+
+.set-row {
+    background: #2a2a2a;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.set-row.set-completed {
+    opacity: 0.7;
+}
+
+.set-row.set-completed .set-input {
+    color: var(--accent);
+}
+
+/* --- COLUMN ALIGNMENTS --- */
+.col-set {
+    text-align: center;
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.col-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+/* --- INPUTS --- */
+.set-input {
+    width: 100%;
+    background: #151515;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    padding: 0.4rem;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.set-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #1e1e1e;
+}
+
+/* --- ACTION BUTTONS --- */
+.btn-done {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    font-size: 1.3rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-done.done {
+    color: var(--accent);
+}
+
+.btn-done:hover {
+    color: var(--accent);
+}
+
+.btn-delete-set {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-delete-set:hover {
+    color: #ef4444;
+}
+
+/* Add Set Button */
+.add-set-btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.add-set-input {
+    width: 70px;
+    padding: 0.5rem;
+    background: #151515;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.add-set-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.btn-add-set-simple {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-set-simple:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(200, 255, 0, 0.3);
+}
+
+.add-set-form .auth-input {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.5rem;
+}
+
+.modal-dark .modal-content {
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+}
+
+.modal-dark .modal-header {
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-dark .modal-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+}
+
+.exercise-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    padding-right: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.modal-backdrop {
+    z-index: 1040;
+}
+
+.modal {
+    z-index: 1050;
+}
+
+.modal-content {
+    pointer-events: auto;
+}
+
+.exercise-select-btn {
+    display: flex;
+    flex-direction: column;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    color: #fff;
+}
+
+button.exercise-select-btn {
+    -webkit-appearance: button;
+    appearance: button;
+}
+
+.exercise-select-btn:hover {
+    border-color: var(--accent);
+    background: rgba(255, 107, 53, 0.2);
+}
+
+.exercise-select-btn:active {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+
+.exercise-select-name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.exercise-select-category {
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+}
+
+.btn-sm {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+}
+
+.exercise-picker-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    max-width: 95vw;
+    max-height: 80vh;
+    background: var(--bg-color);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    z-index: 500;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+#exercisePickerOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    z-index: 400;
+    pointer-events: auto;
+}
+
+#exercisePickerOverlay[style*="display: none"] {
+    pointer-events: none;
+}
+
+.exercise-picker-panel .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.exercise-picker-panel .panel-header h5 {
+    margin: 0;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+}
+
+.exercise-picker-panel .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+</style>
+
+<script>
+let restInterval = null;
+let restSeconds = 60;
+
+// Store rest times per exercise
+const exerciseRestTimes = {};
+
+// Load saved rest times from localStorage
+const savedTimes = localStorage.getItem('exerciseRestTimes');
+if (savedTimes) {
+    Object.assign(exerciseRestTimes, JSON.parse(savedTimes));
+}
+
+function saveRestTime(exerciseId, seconds) {
+    exerciseRestTimes[exerciseId] = parseInt(seconds);
+    localStorage.setItem('exerciseRestTimes', JSON.stringify(exerciseRestTimes));
+}
+
+function updateSet(setId, field, value) {
+    fetch('/EcomProject/public/workouts/update-set', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'set_id=' + setId + '&field=' + field + '&value=' + value
+    });
+}
+
+function markSetDone(setId, exerciseId) {
+    const btn = event.currentTarget;
+    const row = btn.closest('.set-row');
+    const icon = btn.querySelector('i');
+
+    if (row.classList.contains('set-completed')) {
+        row.classList.remove('set-completed');
+        icon.className = 'bi bi-circle';
+        btn.classList.remove('done');
+    } else {
+        row.classList.add('set-completed');
+        icon.className = 'bi bi-check-circle-fill';
+        btn.classList.add('done');
+
+        // Use saved rest time for this exercise (default 60s)
+        const restTime = exerciseRestTimes[exerciseId] || 60;
+        startRestTimer(restTime);
+    }
+}
+
+function startRestTimer(seconds) {
+    stopRestTimer();
+    restSeconds = seconds;
+
+    const restBlock = document.getElementById('restBlock');
+    const countdown = document.getElementById('restCountdown');
+
+    restBlock.style.display = 'flex';
+
+    restInterval = setInterval(function() {
+        restSeconds--;
+        const mins = Math.floor(restSeconds / 60);
+        const secs = restSeconds % 60;
+        countdown.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+        if (restSeconds <= 0) {
+            stopRestTimer();
+            playBeep();
+            alert('Rest time is up! Ready for your next set.');
+        }
+    }, 1000);
+}
+
+function stopRestTimer() {
+    if (restInterval) {
+        clearInterval(restInterval);
+        restInterval = null;
+    }
+    document.getElementById('restBlock').style.display = 'none';
+}
+
+function playBeep() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.frequency.value = 880;
+        gainNode.gain.value = 0.3;
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.2);
+    } catch (e) {}
+}
+
+let timerRunning = false;
+let timerInterval = null;
+let customTimerRunning = false;
+let customTimerInterval = null;
+
+function toggleTimer() {
+    const btn = document.getElementById('timerToggleBtn');
+    const icon = document.getElementById('timerIcon');
+    const timerDisplay = document.getElementById('mainTimer');
+
+    if (timerRunning) {
+        // Stop the elapsed timer
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        timerRunning = false;
+        icon.className = 'bi bi-play-fill';
+        btn.style.background = 'var(--accent)';
+    } else {
+        // Start the elapsed timer
+        timerRunning = true;
+        icon.className = 'bi bi-pause-fill';
+        btn.style.background = '#22c55e';
+
+        const startTime = new Date('{{ session.start_time }}');
+        timerInterval = setInterval(function() {
+            const now = new Date();
+            const diff = now - startTime;
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            timerDisplay.textContent =
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }, 1000);
+    }
+}
+
+function startCustomTimer() {
+    const minInput = document.getElementById('customMin');
+    const secInput = document.getElementById('customSec');
+    const minutes = parseInt(minInput.value) || 0;
+    const seconds = parseInt(secInput.value) || 0;
+    const totalSeconds = (minutes * 60) + seconds;
+
+    if (totalSeconds <= 0) {
+        alert('Please enter a time greater than 0');
+        return;
+    }
+
+    // Stop any running timer first
+    if (timerRunning) {
+        toggleTimer();
+    }
+
+    // Stop rest timer if running
+    stopRestTimer();
+
+    let remaining = totalSeconds;
+    const restBlock = document.getElementById('restBlock');
+    const countdown = document.getElementById('restCountdown');
+
+    restBlock.style.display = 'flex';
+
+    customTimerRunning = true;
+    customTimerInterval = setInterval(function() {
+        remaining--;
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        countdown.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+        if (remaining <= 0) {
+            stopCustomTimer();
+            // Play a beep sound
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.frequency.value = 880;
+                gainNode.gain.value = 0.3;
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.2);
+            } catch (e) {}
+            alert('Timer complete!');
+        }
+    }, 1000);
+}
+
+function stopCustomTimer() {
+    if (customTimerInterval) {
+        clearInterval(customTimerInterval);
+        customTimerInterval = null;
+    }
+    customTimerRunning = false;
+    document.getElementById('restBlock').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const startTime = new Date('{{ session.start_time }}');
+    const timerDisplay = document.getElementById('mainTimer');
+
+    function updateTimer() {
+        const now = new Date();
+        const diff = now - startTime;
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        timerDisplay.textContent =
+            String(hours).padStart(2, '0') + ':' +
+            String(minutes).padStart(2, '0') + ':' +
+            String(seconds).padStart(2, '0');
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+});
+</script>
+</div>
+{% endblock %}

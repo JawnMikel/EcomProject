@@ -34,6 +34,19 @@ return function (ContainerBuilder $builder) {
         },
 
         EmailService::class => fn(ContainerInterface $c) => new EmailService(),
+
+        \App\Models\ExerciseModel::class => function (ContainerInterface $c) {
+            return new \App\Models\ExerciseModel($c->get(PDO::class));
+        },
+
+        \App\Models\WorkoutSessionModel::class => function (ContainerInterface $c) {
+            return new \App\Models\WorkoutSessionModel($c->get(PDO::class));
+        },
+
+        \App\Models\TrainingProgramModel::class => function (ContainerInterface $c) {
+            return new \App\Models\TrainingProgramModel($c->get(PDO::class));
+        },
+
         TwoFactorService::class => fn(ContainerInterface $c) => new TwoFactorService($c->get(PDO::class)),
         App\Models\UserModel::class => fn(ContainerInterface $c) => new App\Models\UserModel($c->get(PDO::class)),
         App\Models\WorkoutSessionModel::class => fn(ContainerInterface $c) => new App\Models\WorkoutSessionModel($c->get(PDO::class)),

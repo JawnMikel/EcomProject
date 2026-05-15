@@ -49,4 +49,31 @@ class UserModel extends BaseModel
         $stmt->execute([$username]);
         return (bool) $stmt->fetch();
     }
+
+    public function updateProfile(int $userId, array $data): bool
+    {
+        $fields = [];
+        $values = [];
+
+        $allowedFields = [
+            'bio', 'profile_picture', 'fitness_goal', 'experience_level',
+            'height', 'weight_goal', 'workout_frequency', 'preferred_days', 'location'
+        ];
+
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $fields[] = "{$field} = ?";
+                $values[] = $data[$field];
+            }
+        }
+
+        if (empty($fields)) {
+            return false;
+        }
+
+        $values[] = $userId;
+        $sql = 'UPDATE users SET ' . implode(', ', $fields) . ' WHERE id = ?';
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($values);
+    }
 }

@@ -299,3 +299,203 @@
     </div>
 </div>
 {% endblock %}
+                {% for entry in weight_trend|reverse %}
+                <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: {{ range > 0 ? ((entry.weight_value - weight_min) / range * 100)|round : 50 }}%">
+                        <span class="chart-tooltip">{{ (entry.weight_value * 2.20462)|round(1) }} lbs</span>
+                    </div>
+                    <span class="chart-label">{{ entry.entry_date|date('m/d') }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <p class="empty-state">No weight data yet. Start tracking!</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="panel-card activity-panel">
+        <h5 class="panel-card-title">
+            <i class="bi bi-clock-history"></i> Recent Activity
+        </h5>
+        {% if recent_sessions %}
+        <div class="activity-list">
+            {% for session in recent_sessions[:5] %}
+            <div class="activity-item">
+                <div class="activity-date">{{ session.start_time|date('M j, g:i a') }}</div>
+                <div class="activity-details">
+                    <span class="activity-duration">{{ (session.total_duration / 60)|round(0) }} min</span>
+                    <span class="activity-volume">{{ session.total_volume ? session.total_volume ~ ' lbs' : '—' }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No workouts yet. Start your first one!</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.stats-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.stat-box {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    padding: 1rem 1.5rem;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 0.35rem;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-panel {
+    min-height: 350px;
+}
+
+.activity-panel {
+    min-height: 350px;
+}
+
+.mini-chart {
+    height: 250px;
+    display: flex;
+    align-items: flex-end;
+    padding-top: 1rem;
+}
+
+.chart-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    gap: 0.5rem;
+}
+
+.chart-bar-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.chart-bar {
+    width: 100%;
+    background: linear-gradient(to top, var(--accent), rgba(200, 255, 0, 0.3));
+    border-radius: 2px 2px 0 0;
+    min-height: 4px;
+    position: relative;
+    transition: opacity 0.2s;
+}
+
+.chart-bar:hover {
+    opacity: 0.8;
+}
+
+.chart-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+    color: #ccc;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.chart-bar:hover .chart-tooltip {
+    opacity: 1;
+}
+
+.chart-label {
+    font-size: 0.55rem;
+    color: #444;
+    margin-top: 0.35rem;
+    text-transform: uppercase;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-date {
+    font-size: 0.85rem;
+    color: #ccc;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.activity-details {
+    display: flex;
+    gap: 1rem;
+}
+
+.activity-duration,
+.activity-volume {
+    font-size: 0.7rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.empty-state {
+    padding: 2rem 0;
+    text-align: center;
+    color: #444;
+}
+</style>
+{% endblock %}
