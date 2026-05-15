@@ -66,13 +66,15 @@
 
         {% if program.workouts %}
         <div class="explore-exercises">
-            <span class="exercises-label">{{ program.workouts|length }} exercises</span>
+            <span class="exercises-label">{{ program.workouts|length }} workouts · {{ program.exercise_count }} exercises</span>
             <div class="exercise-tags">
-                {% for ex in program.workouts[:4] %}
-                <span class="exercise-tag">{{ ex.exercise_name }}</span>
+                {% for workout in program.workouts[:3] %}
+                    {% for ex in workout[:2] %}
+                    <span class="exercise-tag">{{ ex.exercise_name }}</span>
+                    {% endfor %}
                 {% endfor %}
-                {% if program.workouts|length > 4 %}
-                <span class="exercise-tag">+{{ program.workouts|length - 4 }} more</span>
+                {% if program.exercise_count > 6 %}
+                <span class="exercise-tag">+{{ program.exercise_count - 6 }} more</span>
                 {% endif %}
             </div>
         </div>

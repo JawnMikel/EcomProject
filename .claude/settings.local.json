@@ -4,5 +4,11 @@
     "ANTHROPIC_MODEL": "minimax-m2.5-free",
     "ANTHROPIC_API_KEY": "sk-2pKeCeaMOkF3hT8GTsKqRMuyKrWilI0JsP0upNFK9PqgnX2obvzQIU8EjW1MBJwR",
     "ENABLE_TOOL_SEARCH": "true"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
   }
 }
