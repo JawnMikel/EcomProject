@@ -9,12 +9,15 @@
 <div class="section-header">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
+            <a href="/EcomProject/public/workouts" class="btn-back-link">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
             <h1 class="section-title">Active Workout</h1>
             <p class="section-subtitle">Add exercises and track your sets</p>
         </div>
         <form method="POST" action="/EcomProject/public/workouts/cancel">
             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Cancel this workout? All progress will be lost.')">
-                <i class="bi bi-x-lg"></i> Cancel Workout
+                <i class="bi bi-x-lg"></i> Cancel
             </button>
         </form>
     </div>
@@ -785,6 +788,20 @@ button.exercise-select-btn {
     text-transform: uppercase;
 }
 
+.btn-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #888;
+    font-size: 0.8rem;
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+    transition: color 0.2s;
+}
+.btn-back-link:hover {
+    color: var(--accent);
+}
+
 .btn-sm {
     padding: 0.35rem 0.6rem;
     font-size: 0.75rem;
@@ -937,43 +954,42 @@ function playBeep() {
     } catch (e) {}
 }
 
-let timerRunning = false;
-let timerInterval = null;
+let mainTimerInterval = null;
+let mainTimerRunning = true;
 let customTimerRunning = false;
 let customTimerInterval = null;
+const workoutStartTime = new Date('{{ session.start_time }}');
+
+function updateMainTimer() {
+    const timerDisplay = document.getElementById('mainTimer');
+    const now = new Date();
+    const diff = now - workoutStartTime;
+    const hours = Math.floor(diff / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    timerDisplay.textContent =
+        String(hours).padStart(2, '0') + ':' +
+        String(minutes).padStart(2, '0') + ':' +
+        String(seconds).padStart(2, '0');
+}
 
 function toggleTimer() {
     const btn = document.getElementById('timerToggleBtn');
     const icon = document.getElementById('timerIcon');
-    const timerDisplay = document.getElementById('mainTimer');
 
-    if (timerRunning) {
-        // Stop the elapsed timer
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
+    if (mainTimerRunning) {
+        if (mainTimerInterval) {
+            clearInterval(mainTimerInterval);
+            mainTimerInterval = null;
         }
-        timerRunning = false;
+        mainTimerRunning = false;
         icon.className = 'bi bi-play-fill';
-        btn.style.background = 'var(--accent)';
-    } else {
-        // Start the elapsed timer
-        timerRunning = true;
-        icon.className = 'bi bi-pause-fill';
         btn.style.background = '#22c55e';
-
-        const startTime = new Date('{{ session.start_time }}');
-        timerInterval = setInterval(function() {
-            const now = new Date();
-            const diff = now - startTime;
-            const hours = Math.floor(diff / 3600000);
-            const minutes = Math.floor((diff % 3600000) / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            timerDisplay.textContent =
-                String(hours).padStart(2, '0') + ':' +
-                String(minutes).padStart(2, '0') + ':' +
-                String(seconds).padStart(2, '0');
-        }, 1000);
+    } else {
+        mainTimerRunning = true;
+        icon.className = 'bi bi-pause-fill';
+        btn.style.background = 'var(--accent)';
+        mainTimerInterval = setInterval(updateMainTimer, 1000);
     }
 }
 
@@ -1039,23 +1055,8 @@ function stopCustomTimer() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const startTime = new Date('{{ session.start_time }}');
-    const timerDisplay = document.getElementById('mainTimer');
-
-    function updateTimer() {
-        const now = new Date();
-        const diff = now - startTime;
-        const hours = Math.floor(diff / 3600000);
-        const minutes = Math.floor((diff % 3600000) / 60000);
-        const seconds = Math.floor((diff % 60000) / 1000);
-        timerDisplay.textContent =
-            String(hours).padStart(2, '0') + ':' +
-            String(minutes).padStart(2, '0') + ':' +
-            String(seconds).padStart(2, '0');
-    }
-
-    updateTimer();
-    setInterval(updateTimer, 1000);
+    updateMainTimer();
+    mainTimerInterval = setInterval(updateMainTimer, 1000);
 });
 </script>
 </div>

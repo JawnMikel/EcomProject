@@ -31,6 +31,12 @@ class WorkoutController
 
         $sessions = $this->workoutModel->getRecentByUser((int) $userId);
         $activeSession = $this->workoutModel->getActiveSession((int) $userId);
+
+        // Sync start_time to session if there's an active session
+        if ($activeSession && isset($activeSession['start_time']) && empty($_SESSION['start_time'])) {
+            $_SESSION['start_time'] = $activeSession['start_time'];
+        }
+
         $programs = $this->programModel->getByUser((int) $userId);
 
         $flashSuccess = $_SESSION['flash_success'] ?? null;
@@ -109,6 +115,9 @@ class WorkoutController
         $programWorkoutId = !empty($data['program_workout_id']) ? (int) $data['program_workout_id'] : null;
 
         $sessionId = $this->workoutModel->startSession((int) $userId, $programWorkoutId);
+
+        // Store start_time in session for the timer
+        $_SESSION['start_time'] = date('Y-m-d H:i:s');
 
         // If starting from a plan, add exercises with target sets/reps from that workout
         if ($programWorkoutId) {
@@ -299,6 +308,7 @@ class WorkoutController
         $activeSession = $this->workoutModel->getActiveSession((int) $userId);
         if ($activeSession) {
             $this->workoutModel->completeSession((int) $activeSession['id']);
+            unset($_SESSION['start_time']);
             $_SESSION['flash_success'] = 'Workout completed! Great job!';
         }
 
@@ -316,6 +326,7 @@ class WorkoutController
         if ($activeSession) {
             // Delete the session (cascade will delete items)
             $this->workoutModel->deleteSession((int) $activeSession['id']);
+            unset($_SESSION['start_time']);
             $_SESSION['flash_success'] = 'Workout cancelled.';
         }
 

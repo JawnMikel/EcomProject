@@ -46,6 +46,14 @@
                 </li>
             </ul>
             <ul class="navbar-nav">
+                {% if session.start_time %}
+                <li class="nav-item">
+                    <a class="nav-link timer-nav-link" href="/EcomProject/public/workouts/active">
+                        <i class="bi bi-clock-history"></i>
+                        <span id="navTimer">00:00:00</span>
+                    </a>
+                </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="/EcomProject/public/profile"><i class="bi bi-person"></i> {{ session.username }}</a>
                 </li>
@@ -56,6 +64,48 @@
         </div>
     </div>
 </nav>
+{% if session.start_time %}
+<script>
+(function() {
+    const startTime = new Date('{{ session.start_time }}');
+    const timerDisplay = document.getElementById('navTimer');
+    if (timerDisplay) {
+        setInterval(function() {
+            const now = new Date();
+            const diff = now - startTime;
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            timerDisplay.textContent =
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }, 1000);
+    }
+})();
+</script>
+<style>
+.timer-nav-link {
+    background: rgba(200, 255, 0, 0.15);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.35rem 0.75rem !important;
+    margin-right: 0.5rem;
+}
+.timer-nav-link:hover {
+    background: rgba(200, 255, 0, 0.25);
+}
+.timer-nav-link i {
+    margin-right: 0.35rem;
+    color: var(--accent);
+}
+#navTimer {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--accent);
+    font-weight: 600;
+}
+</style>
+{% endif %}
 {% endif %}
 
 <main class="main-wrapper">
