@@ -7,8 +7,17 @@
 <div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
 
 <div class="section-header">
-    <h1 class="section-title">Active Workout</h1>
-    <p class="section-subtitle">Add exercises and track your sets</p>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 class="section-title">Active Workout</h1>
+            <p class="section-subtitle">Add exercises and track your sets</p>
+        </div>
+        <form method="POST" action="/EcomProject/public/workouts/cancel">
+            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Cancel this workout? All progress will be lost.')">
+                <i class="bi bi-x-lg"></i> Cancel Workout
+            </button>
+        </form>
+    </div>
     <div class="section-title-bar"></div>
 </div>
 
@@ -31,6 +40,9 @@
                         <div class="exercise-title-row">
                             <h6 class="exercise-name">{{ data.info.name }}</h6>
                             <span class="badge-difficulty badge-{{ data.info.difficulty }}">{{ data.info.difficulty }}</span>
+                            {% if data.target_sets and data.target_reps %}
+                            <span class="badge-program-target">{{ data.target_sets }}×{{ data.target_reps }}</span>
+                            {% endif %}
                         </div>
                         <div class="rest-setting">
                             <label>Rest:</label>
@@ -523,6 +535,16 @@ document.addEventListener('DOMContentLoaded', function() {
 .badge-beginner { background: #22c55e; color: #000; }
 .badge-intermediate { background: #f59e0b; color: #000; }
 .badge-advanced { background: #ef4444; color: #fff; }
+
+.badge-program-target {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
 
 /* --- SETS LIST GRID LAYOUT --- */
 .sets-list {

@@ -123,17 +123,29 @@ class TrainingProgramModel extends BaseModel
                     'difficulty' => $row['difficulty'],
                     'environment' => $row['environment'],
                     'goal' => $row['goal'],
-                    'workouts' => []
+                    'workouts' => [],
+                    'exercise_count' => 0
                 ];
             }
             if ($row['exercise_name']) {
-                $programs[$pid]['workouts'][] = [
+                $programs[$pid]['exercise_count']++;
+                // Group by workout
+                $wid = $row['workout_id'] ?? 'default';
+                if (!isset($programs[$pid]['workouts'][$wid])) {
+                    $programs[$pid]['workouts'][$wid] = [];
+                }
+                $programs[$pid]['workouts'][$wid][] = [
                     'exercise_name' => $row['exercise_name'],
                     'category_name' => $row['category_name'],
                     'target_sets' => $row['target_sets'],
                     'target_reps' => $row['target_reps']
                 ];
             }
+        }
+
+        // Convert workouts sub-array to regular array
+        foreach ($programs as &$p) {
+            $p['workouts'] = array_values($p['workouts']);
         }
 
         return array_values($programs);
@@ -282,7 +294,7 @@ class TrainingProgramModel extends BaseModel
     public function getWorkoutExercises(int $workoutId): array
     {
         $stmt = $this->db->prepare(
-            'SELECT pwe.exercise_order, e.id, e.name, e.difficulty, c.name as category_name
+            'SELECT pwe.exercise_order, pwe.target_sets, pwe.target_reps, e.id, e.name, e.difficulty, c.name as category_name
              FROM program_workout_exercises pwe
              JOIN exercises e ON pwe.exercise_id = e.id
              LEFT JOIN categories c ON e.category_id = c.id

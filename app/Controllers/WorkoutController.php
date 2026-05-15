@@ -110,11 +110,21 @@ class WorkoutController
 
         $sessionId = $this->workoutModel->startSession((int) $userId, $programWorkoutId);
 
-        // If starting from a plan, add exercises from that workout
+        // If starting from a plan, add exercises with target sets/reps from that workout
         if ($programWorkoutId) {
             $planExercises = $this->programModel->getWorkoutExercises($programWorkoutId);
             foreach ($planExercises as $ex) {
+                // Add the exercise to the session
                 $this->workoutModel->addExercise($sessionId, (int) $ex['id']);
+
+                // Pre-create sets based on target sets/reps
+                $targetSets = (int) ($ex['target_sets'] ?? 0);
+                $targetReps = (int) ($ex['target_reps'] ?? 0);
+                if ($targetSets > 0 && $targetReps > 0) {
+                    for ($i = 0; $i < $targetSets; $i++) {
+                        $this->workoutModel->addSet($sessionId, (int) $ex['id'], $targetReps, 0);
+                    }
+                }
             }
         }
 
@@ -137,11 +147,25 @@ class WorkoutController
         $allExercises = $this->exerciseModel->getAll();
         $categories = $this->exerciseModel->getCategories();
 
+        // Get program targets if this is a program workout
+        $programTargets = [];
+        if (!empty($activeSession['program_workout_id'])) {
+            $planExercises = $this->programModel->getWorkoutExercises((int) $activeSession['program_workout_id']);
+            foreach ($planExercises as $pex) {
+                $programTargets[$pex['id']] = [
+                    'target_sets' => $pex['target_sets'],
+                    'target_reps' => $pex['target_reps']
+                ];
+            }
+        }
+
         $exerciseDetails = [];
         foreach ($exercises as $ex) {
             $exerciseDetails[$ex['id']] = [
                 'info' => $ex,
-                'sets' => $this->workoutModel->getExerciseSets((int) $activeSession['id'], (int) $ex['id'])
+                'sets' => $this->workoutModel->getExerciseSets((int) $activeSession['id'], (int) $ex['id']),
+                'target_sets' => $programTargets[$ex['id']]['target_sets'] ?? null,
+                'target_reps' => $programTargets[$ex['id']]['target_reps'] ?? null,
             ];
         }
 
@@ -276,6 +300,23 @@ class WorkoutController
         if ($activeSession) {
             $this->workoutModel->completeSession((int) $activeSession['id']);
             $_SESSION['flash_success'] = 'Workout completed! Great job!';
+        }
+
+        return $response->withHeader('Location', $this->basePath . '/workouts')->withStatus(302);
+    }
+
+    public function cancel(Request $request, Response $response): Response
+    {
+        $userId = $_SESSION['user_id'] ?? null;
+        if (!$userId) {
+            return $response->withHeader('Location', $this->basePath . '/login')->withStatus(302);
+        }
+
+        $activeSession = $this->workoutModel->getActiveSession((int) $userId);
+        if ($activeSession) {
+            // Delete the session (cascade will delete items)
+            $this->workoutModel->deleteSession((int) $activeSession['id']);
+            $_SESSION['flash_success'] = 'Workout cancelled.';
         }
 
         return $response->withHeader('Location', $this->basePath . '/workouts')->withStatus(302);

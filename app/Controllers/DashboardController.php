@@ -59,8 +59,14 @@ class DashboardController
             $weightMax = max($weights);
         }
 
-        // Get total volume lifted (all time)
-        $stmt = $this->db->query('SELECT COALESCE(SUM(total_volume), 0) as total FROM workout_sessions WHERE user_id = ' . $userId);
+        // Get total volume lifted (all time) - calculate from items table
+        $stmt = $this->db->prepare(
+            'SELECT COALESCE(SUM(wsi.reps * wsi.weight), 0) as total
+             FROM workout_sessions ws
+             LEFT JOIN workout_session_items wsi ON ws.id = wsi.session_id
+             WHERE ws.user_id = ?'
+        );
+        $stmt->execute([$userId]);
         $stats['total_volume'] = (float) $stmt->fetch()['total'];
 
         return $this->view->render($response, 'dashboard/index.twig', [

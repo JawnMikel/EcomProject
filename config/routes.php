@@ -37,6 +37,7 @@ return function (App $app) {
         $group->post('/workouts/delete-set', [WorkoutController::class, 'deleteSet'])->setName('workouts.deleteSet');
         $group->post('/workouts/update-set', [WorkoutController::class, 'updateSet'])->setName('workouts.updateSet');
         $group->post('/workouts/complete', [WorkoutController::class, 'complete'])->setName('workouts.complete');
+        $group->post('/workouts/cancel', [WorkoutController::class, 'cancel'])->setName('workouts.cancel');
         $group->get('/programs',       [ProgramController::class, 'index'])->setName('programs.index');
         $group->post('/programs',      [ProgramController::class, 'create'])->setName('programs.create');
         $group->post('/programs/add-workout', [ProgramController::class, 'addWorkout'])->setName('programs.addWorkout');

@@ -60,7 +60,7 @@
                     {% for row in weightTrend %}
                     <tr>
                         <td>{{ row.entry_date }}</td>
-                        <td>{{ row.weight_value }} kg</td>
+                        <td>{{ (row.weight_value * 2.20462)|round(1) }} lbs</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -76,7 +76,7 @@
                 <i class="bi bi-speedometer2"></i> Current Weight
             </h5>
             <div class="stat-value" style="font-size: 2.5rem; margin-bottom: 0.5rem;">
-                {{ lastWeight ? lastWeight ~ ' kg' : 'N/A' }}
+                {{ lastWeight ? (lastWeight * 2.20462)|round(1) ~ ' lbs' : 'N/A' }}
             </div>
             <p class="text-muted mb-0">Most recent recorded body weight.</p>
         </div>

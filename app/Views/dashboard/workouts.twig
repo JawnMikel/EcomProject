@@ -23,9 +23,16 @@
 {% endif %}
 
 {% if active_session %}
-<div class="alert-gainz">
-    <i class="bi bi-exclamation-circle me-1"></i>You have an active workout in progress!
-    <a href="/EcomProject/public/workouts/active" class="btn btn-sm btn-warning ms-2">Continue Workout</a>
+<div class="alert-gainz" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <i class="bi bi-exclamation-circle me-1"></i>You have an active workout in progress!
+        <a href="/EcomProject/public/workouts/active" class="btn btn-sm btn-warning ms-2">Continue Workout</a>
+    </div>
+    <form method="POST" action="/EcomProject/public/workouts/cancel" style="display: inline;">
+        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Cancel this workout? All progress will be lost.')">
+            <i class="bi bi-x-lg"></i> Cancel
+        </button>
+    </form>
 </div>
 {% endif %}
 
