@@ -344,7 +344,7 @@
         <p class="brand-sub">Industrial Athletics System</p>
 
         <div class="auth-card">
-            <div class="auth-title">LOGIN</div>
+            <div class="auth-title" data-i18n="auth.login.title">LOGIN</div>
             <div class="auth-title-bar"></div>
 
             {% if error %}
@@ -356,13 +356,14 @@
             <form method="POST" action="/EcomProject/public/login">
 
                 <div>
-                    <label class="field-label" for="email">EMAIL OR USERNAME</label>
+                    <label class="field-label" for="email" data-i18n="auth.login.email_or_username">EMAIL OR USERNAME</label>
                     <div class="field-wrap">
                         <input type="text"
                                id="email"
                                name="email"
                                class="auth-input"
                                placeholder="Email or Username"
+                               data-i18n="auth.login.email_placeholder"
                                required
                                autofocus>
                         <i class="bi bi-person field-icon"></i>
@@ -370,13 +371,14 @@
                 </div>
 
                 <div>
-                    <label class="field-label" for="password">PASSWORD</label>
+                    <label class="field-label" for="password" data-i18n="auth.login.password">PASSWORD</label>
                     <div class="field-wrap">
                         <input type="password"
                                id="password"
                                name="password"
                                class="auth-input"
                                placeholder="••••••••••••"
+                               data-i18n="auth.login.password_placeholder"
                                required>
                         <i class="bi bi-eye field-icon clickable"
                            id="pwd-toggle"
@@ -384,17 +386,17 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-access">
+                <button type="submit" class="btn-access" data-i18n="auth.login.login_button">
                     LOGIN <i class="bi bi-lightning-charge-fill"></i>
                 </button>
 
             </form>
 
             <div class="auth-links">
-                <a href="/EcomProject/public/register" class="auth-link">
+                <a href="/EcomProject/public/register" class="auth-link" data-i18n="auth.login.new_recruit">
                     <i class="bi bi-chevron-right"></i> New Recruit? Create Account
                 </a>
-                <a href="#" class="auth-link">
+                <a href="#" class="auth-link" data-i18n="auth.login.reset_access">
                     <i class="bi bi-arrow-repeat"></i> Reset Access
                 </a>
             </div>
@@ -409,14 +411,14 @@
 </div>
 
 <footer class="site-footer">
-    <span class="footer-brand">GAINZ Industrial Athletics. No Weakness.</span>
+    <span class="footer-brand" data-i18n="footer.brand">GAINZ Industrial Athletics. No Weakness.</span>
     <div class="footer-links">
-        <a href="#">Terms of Service</a>
-        <a href="#">Privacy Policy</a>
-        <a href="#">Support</a>
-        <a href="#">API</a>
+        <a href="#" data-i18n="footer.terms">Terms of Service</a>
+        <a href="#" data-i18n="footer.privacy">Privacy Policy</a>
+        <a href="#" data-i18n="footer.support">Support</a>
+        <a href="#" data-i18n="footer.api">API</a>
     </div>
-    <span class="footer-copy">© 2025 GAINZ Industrial Athletics.</span>
+    <span class="footer-copy" data-i18n="footer.copyright">© 2025 GAINZ Industrial Athletics.</span>
 </footer>
 
 <script>
@@ -432,5 +434,6 @@ function togglePassword() {
     }
 }
 </script>
+<script src="/EcomProject/public/js/i18n.js"></script>
 </body>
 </html>

@@ -198,53 +198,53 @@
 <div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
 
 <div class="dash-header">
-    <h1>Welcome back, {{ username }}</h1>
-    <p>Your performance data from workouts, body weight, and active programs.</p>
+    <h1 data-i18n="dashboard.welcome_back" data-i18n-vars='{"username":"{{ username }}"}'>Welcome back, {{ username }}</h1>
+    <p data-i18n="dashboard.performance_data">Your performance data from workouts, body weight, and active programs.</p>
 </div>
 
 <div class="dash-grid">
     <div class="dash-main">
         <div class="stat-cards">
             <div class="stat-card">
-                <div class="stat-card-label">Workout streak</div>
-                <div class="stat-card-value">{{ workoutStreak }}<small>day{{ workoutStreak == 1 ? '' : 's' }}</small></div>
-                <div class="stat-card-hint">{{ totalWorkouts }} workout{{ totalWorkouts == 1 ? '' : 's' }} logged</div>
+                <div class="stat-card-label" data-i18n="dashboard.stats.workout_streak">Workout streak</div>
+                <div class="stat-card-value">{{ workoutStreak }}<small>{{ workoutStreak == 1 ? 'day' : 'days' }}</small></div>
+                <div class="stat-card-hint">{{ totalWorkouts }} {{ totalWorkouts == 1 ? 'workout logged' : 'workouts logged' }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-label">Latest workout</div>
+                <div class="stat-card-label" data-i18n="dashboard.stats.latest_workout">Latest workout</div>
                 <div class="stat-card-value">{{ latestWorkoutLabel }}</div>
                 <div class="stat-card-hint">{{ latestWorkoutBadge }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-label">Body weight</div>
+                <div class="stat-card-label" data-i18n="dashboard.stats.body_weight">Body weight</div>
                 <div class="stat-card-value">{{ latestWeight }}</div>
                 <div class="stat-card-hint">{{ weightHint }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-label">Avg session</div>
+                <div class="stat-card-label" data-i18n="dashboard.stats.avg_session">Avg session</div>
                 <div class="stat-card-value">{{ averageSessionMinutes }}<small>min</small></div>
-                <div class="stat-card-hint">{{ programCount }} active program{{ programCount == 1 ? '' : 's' }}</div>
+                <div class="stat-card-hint">{{ programCount }} {{ programCount == 1 ? 'active program' : 'active programs' }}</div>
             </div>
         </div>
 
         <div class="panel-row">
             <div class="panel-box">
-                <h3><i class="bi bi-list-check"></i> Progress checklist</h3>
+                <h3 data-i18n="dashboard.progress_checklist.title"><i class="bi bi-list-check"></i> Progress checklist</h3>
                 <div class="stat-inline">
-                    <span class="stat-inline-label">Workout consistency</span>
+                    <span class="stat-inline-label" data-i18n="dashboard.progress_checklist.workout_consistency">Workout consistency</span>
                     <span class="stat-inline-value {{ workoutStreak > 0 ? 'active' : '' }}">{{ workoutStreak > 0 ? 'On track' : 'Start now' }}</span>
                 </div>
                 <div class="stat-inline">
-                    <span class="stat-inline-label">Programs active</span>
+                    <span class="stat-inline-label" data-i18n="dashboard.progress_checklist.programs_active">Programs active</span>
                     <span class="stat-inline-value active">{{ programCount }}</span>
                 </div>
                 <div class="stat-inline">
-                    <span class="stat-inline-label">Weight log</span>
+                    <span class="stat-inline-label" data-i18n="dashboard.progress_checklist.weight_log">Weight log</span>
                     <span class="stat-inline-value {{ latestWeight != 'No weight recorded' ? 'active' : '' }}">{{ latestWeight != 'No weight recorded' ? 'Up to date' : 'Add entry' }}</span>
                 </div>
             </div>
             <div class="panel-box">
-                <h3><i class="bi bi-capsule"></i> Recommended supplements</h3>
+                <h3 data-i18n="dashboard.recommended_supplements.title"><i class="bi bi-capsule"></i> Recommended supplements</h3>
                 <div class="supplement-grid">
                     {% for item in recommendedSupplements %}
                     <div class="supplement-item">
@@ -262,7 +262,7 @@
 
     <div class="dash-sidebar">
         <div class="panel-box">
-            <h3><i class="bi bi-newspaper"></i> Latest articles</h3>
+            <h3 data-i18n="dashboard.latest_articles.title"><i class="bi bi-newspaper"></i> Latest articles</h3>
             <div class="article-list">
                 {% for article in latestArticles %}
                 <div class="article-item">
@@ -270,24 +270,24 @@
                         <div class="article-item-title">{{ article.title }}</div>
                         <div class="article-item-desc">{{ article.summary }}</div>
                     </div>
-                    <a href="{{ article.url }}" target="_blank" class="badge-read">Read</a>
+                    <a href="{{ article.url }}" target="_blank" class="badge-read" data-i18n="dashboard.latest_articles.read">Read</a>
                 </div>
                 {% endfor %}
             </div>
-            <a href="/EcomProject/public/analytics" class="btn-gainz mt-3 w-100 text-center">See more insights</a>
+            <a href="/EcomProject/public/analytics" class="btn-gainz mt-3 w-100 text-center" data-i18n="dashboard.latest_articles.see_more_insights">See more insights</a>
         </div>
 
         <div class="panel-box">
-            <h3><i class="bi bi-lightning-charge-fill"></i> Today's focus</h3>
+            <h3 data-i18n="dashboard.todays_focus.title"><i class="bi bi-lightning-charge-fill"></i> Today's focus</h3>
             <div class="action-item">
-                <div class="action-label">Complete today</div>
+                <div class="action-label" data-i18n="dashboard.todays_focus.complete_today">Complete today</div>
                 <div class="action-value">{{ totalWorkouts > 0 ? 'Keep going' : 'Start logging' }}</div>
-                <div class="action-note">Log a workout or weight to power your dashboard</div>
+                <div class="action-note" data-i18n="dashboard.todays_focus.log_workout_note">Log a workout or weight to power your dashboard</div>
             </div>
             <div class="action-item">
-                <div class="action-label">Weekly goal</div>
+                <div class="action-label" data-i18n="dashboard.todays_focus.weekly_goal">Weekly goal</div>
                 <div class="action-value">{{ programCount > 0 ? 'Stay consistent' : 'Pick a program' }}</div>
-                <div class="action-note">Follow your plan and update progress daily</div>
+                <div class="action-note" data-i18n="dashboard.todays_focus.follow_plan_note">Follow your plan and update progress daily</div>
             </div>
         </div>
     </div>
