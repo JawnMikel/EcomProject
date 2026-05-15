@@ -22,6 +22,9 @@ return function (App $app) {
     $app->get('/register', [AuthController::class, 'showRegister'])->setName('register');
     $app->post('/register',[AuthController::class, 'register']);
     $app->get('/logout',   [AuthController::class, 'logout'])->setName('logout');
+    $app->get('/verify-2fa',  [AuthController::class, 'show2FAVerification'])->setName('verify2fa.show');
+    $app->post('/verify-2fa', [AuthController::class, 'verify2FA'])->setName('verify2fa.verify');
+    $app->post('/resend-2fa', [AuthController::class, 'resend2FA'])->setName('verify2fa.resend');
 
     // Protected routes
     $app->group('', function (RouteCollectorProxy $group) {

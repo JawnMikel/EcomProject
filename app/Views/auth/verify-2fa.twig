@@ -1,0 +1,196 @@
+{# 2FA Verification Page #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAINZ Verification</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .verify-code-input {
+            font-size: 32px;
+            letter-spacing: 8px;
+            text-align: center;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            width: 100%;
+            padding: 18px;
+            border: 2px solid #272727;
+            background: #111111;
+            color: #c8ff00;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .verify-code-input:focus {
+            border-color: #c8ff00;
+            box-shadow: 0 0 10px rgba(200, 255, 0, 0.3);
+            outline: none;
+        }
+        
+        .verify-code-input::placeholder {
+            color: #555;
+            letter-spacing: normal;
+        }
+        
+        .resend-section {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #272727;
+        }
+        
+        .resend-text {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .resend-link {
+            color: #c8ff00;
+            text-decoration: none;
+            font-weight: 800;
+            display: inline-block;
+            padding: 10px 20px;
+            border: 2px solid #c8ff00;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .resend-link:hover {
+            background: #c8ff00;
+            color: #080808;
+        }
+        
+        .attempts-warning {
+            background: rgba(200, 255, 0, 0.1);
+            border-left: 3px solid #c8ff00;
+            padding: 12px 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #c8ff00;
+        }
+        
+        .success-message {
+            background: rgba(100, 200, 100, 0.1);
+            border-left: 3px solid #64c864;
+            padding: 12px 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #64c864;
+        }
+    </style>
+</head>
+<body class="auth-background">
+    <div class="auth-page">
+        <div class="auth-inner">
+            <header class="auth-branding">
+                <div class="auth-logo">
+                    <span class="auth-logo-icon"><i class="fas fa-dumbbell"></i></span>
+                    <span class="auth-logo-text">GAINZ</span>
+                </div>
+                <div class="auth-subtitle">INDUSTRIAL ATHLETICS SYSTEM</div>
+            </header>
+
+            <section class="auth-card">
+                <div class="auth-card-content">
+                    <div class="auth-heading">
+                        <span>VERIFICATION</span>
+                        <div class="auth-line"></div>
+                    </div>
+
+                    {% if message %}
+                        <div class="success-message">
+                            <i class="fas fa-check-circle"></i> {{ message }}
+                        </div>
+                    {% endif %}
+
+                    {% if error %}
+                        <div style="background: rgba(255, 100, 100, 0.1); border-left: 3px solid #ff6464; padding: 12px 15px; margin: 20px 0; border-radius: 4px; font-size: 13px; color: #ff6464;">
+                            <i class="fas fa-exclamation-circle"></i> {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <p style="text-align: center; color: #999; margin: 20px 0; font-size: 14px;">
+                        Enter your 6-digit verification code
+                    </p>
+
+                    {% if session['2fa_code'] is defined %}
+                        <div style="background: rgba(200, 255, 0, 0.15); border: 2px dashed #c8ff00; padding: 15px; margin: 20px 0; border-radius: 6px; text-align: center;">
+                            <p style="color: #c8ff00; font-size: 12px; margin: 0 0 8px 0; font-weight: 800;">🔑 DEV MODE - Your Code:</p>
+                            <p style="color: #c8ff00; font-size: 28px; font-weight: 800; margin: 0; letter-spacing: 4px; font-family: monospace;">{{ session['2fa_code'] }}</p>
+                        </div>
+                    {% endif %}
+
+                    <form id="verifyForm" class="auth-form" method="POST" action="/EcomProject/public/verify-2fa" style="margin-top: 30px;">
+                        <div style="text-align: center;">
+                            <input type="text" id="codeInput" name="code" class="verify-code-input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="off">
+                        </div>
+
+                        <input type="hidden" id="fullCode" value="">
+
+                        {% if attempts_remaining > 0 and attempts_remaining <= 2 %}
+                            <div class="attempts-warning">
+                                <i class="fas fa-triangle-exclamation"></i> {{ attempts_remaining }} attempt(s) remaining
+                            </div>
+                        {% endif %}
+
+                        <button type="submit" class="auth-button" style="margin-top: 20px;">
+                            VERIFY <i class="fas fa-check"></i>
+                        </button>
+                    </form>
+
+                    <div class="resend-section">
+                        <p class="resend-text">Didn't receive the code?</p>
+                        <form method="POST" action="/EcomProject/public/resend-2fa" style="display: inline;">
+                            <button type="submit" class="resend-link" style="border: none; padding: 0; background: none; cursor: pointer; font-size: inherit;">
+                                RESEND CODE <i class="fas fa-redo"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="auth-footer" style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
+                <p><i class="fas fa-lock"></i> Your code expires in 10 minutes</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        const codeInput = document.getElementById('codeInput');
+
+        codeInput.addEventListener('input', function(e) {
+            // Allow only numbers
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Limit to 6 digits
+            if (this.value.length > 6) {
+                this.value = this.value.slice(0, 6);
+            }
+        });
+
+        codeInput.addEventListener('keypress', function(e) {
+            // Allow only numbers
+            if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        codeInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            const digits = paste.replace(/[^0-9]/g, '').slice(0, 6);
+            this.value = digits;
+        });
+
+        // Focus on load
+        codeInput.focus();
+    </script>
+</body>
+</html>

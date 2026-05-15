@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Database;
+use App\Services\TwoFactorService;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Slim\Views\Twig;
@@ -31,7 +32,7 @@ return function (ContainerBuilder $builder) {
             return $twig;
         },
 
-        \App\Models\ExerciseModel::class => function (ContainerInterface $c) {
+\App\Models\ExerciseModel::class => function (ContainerInterface $c) {
             return new \App\Models\ExerciseModel($c->get(PDO::class));
         },
 
@@ -43,5 +44,8 @@ return function (ContainerBuilder $builder) {
             return new \App\Models\TrainingProgramModel($c->get(PDO::class));
         },
 
+        TwoFactorService::class => fn(ContainerInterface $c) => new TwoFactorService($c->get(PDO::class)),
+
     ]);
 };
+
