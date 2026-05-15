@@ -32,24 +32,7 @@ class TwoFactorService
         );
         $stmt->execute([$userId, $code, $expiresAt, self::MAX_ATTEMPTS]);
 
-        // Log code to file for testing
-        $this->logCodeToFile($userId, $code);
-
         return $code;
-    }
-
-    /**
-     * Log code to file for testing/development
-     */
-    private function logCodeToFile(int $userId, string $code): void
-    {
-        $logDir = __DIR__ . '/../../storage/logs';
-        @mkdir($logDir, 0777, true);
-        
-        $timestamp = date('Y-m-d H:i:s');
-        $logEntry = "[$timestamp] User ID: $userId | Code: $code | Expires in: " . self::EXPIRY_MINUTES . " min\n";
-        
-        @file_put_contents($logDir . '/2fa_codes.log', $logEntry, FILE_APPEND);
     }
 
     /**

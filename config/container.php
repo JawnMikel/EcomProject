@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\Database;
+use App\Services\EmailService;
 use App\Services\TwoFactorService;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
@@ -29,10 +29,16 @@ return function (ContainerBuilder $builder) {
             // Make session available in all views
             $twig->getEnvironment()->addGlobal('session', $_SESSION ?? []);
             $twig->getEnvironment()->addGlobal('app_name', $_ENV['APP_NAME'] ?? 'GAINZ');
+            $twig->getEnvironment()->addGlobal('app_debug', $_ENV['APP_DEBUG'] ?? false);
             return $twig;
         },
 
+        EmailService::class => fn(ContainerInterface $c) => new EmailService(),
         TwoFactorService::class => fn(ContainerInterface $c) => new TwoFactorService($c->get(PDO::class)),
+        App\Models\UserModel::class => fn(ContainerInterface $c) => new App\Models\UserModel($c->get(PDO::class)),
+        App\Models\WorkoutSessionModel::class => fn(ContainerInterface $c) => new App\Models\WorkoutSessionModel($c->get(PDO::class)),
+        App\Models\BodyWeightEntryModel::class => fn(ContainerInterface $c) => new App\Models\BodyWeightEntryModel($c->get(PDO::class)),
+        App\Models\TrainingProgramModel::class => fn(ContainerInterface $c) => new App\Models\TrainingProgramModel($c->get(PDO::class)),
 
     ]);
 };

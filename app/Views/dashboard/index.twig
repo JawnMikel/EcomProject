@@ -2,54 +2,299 @@
 
 {% block title %}Dashboard — GAINZ{% endblock %}
 
+{% block head %}
+<style>
+.hub-summary {
+    display: grid;
+    gap: 1.5rem;
+}
+.hub-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    height: 100%;
+}
+.hub-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+}
+.hub-card p {
+    color: #bbb;
+    line-height: 1.7;
+}
+.hub-stat-list {
+    display: grid;
+    gap: 1rem;
+}
+.hub-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #161616;
+    padding: 1rem 1.2rem;
+    border-radius: 0.35rem;
+}
+.hub-stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    color: #666;
+    text-transform: uppercase;
+}
+.hub-stat-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fff;
+}
+.hub-stat-value.accent {
+    color: var(--accent);
+}
+.hub-progress {
+    height: 0.7rem;
+    background: #0d0d0d;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 1rem 0 0.5rem;
+}
+.hub-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #eafc4f);
+}
+.hub-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(200,255,0,0.08);
+    color: var(--accent);
+    border-radius: 999px;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.supplement-item,
+.article-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #161616;
+}
+.supplement-item:last-child,
+.article-item:last-child {
+    border-bottom: none;
+}
+.supplement-title,
+.article-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+.supplement-desc,
+.article-desc {
+    font-size: 0.8rem;
+    color: #777;
+}
+.badge-pill {
+    font-size: 0.65rem;
+    background: rgba(200,255,0,0.12);
+    color: var(--accent);
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.quick-card {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #161616;
+    border-radius: 0.45rem;
+    background: rgba(255,255,255,0.02);
+}
+.quick-card-title {
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #777;
+}
+.quick-card-value {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #fff;
+}
+.quick-card-note {
+    color: #888;
+    font-size: 0.78rem;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="watermark"><i class="bi bi-lightning-charge-fill"></i></div>
 
 <div class="section-header">
     <h1 class="section-title">Welcome back, {{ username }}!</h1>
-    <p class="section-subtitle">Select a module to begin your session</p>
+    <p class="section-subtitle">Your dashboard now updates from your workouts, body weight entries, and active programs.</p>
     <div class="section-title-bar"></div>
 </div>
 
 <div class="row g-4">
+    <div class="col-lg-8">
+        <div class="hub-card hub-summary">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-column flex-md-row">
+                <div>
+                    <h3>Performance snapshot</h3>
+                    <p>{{ summaryText }}</p>
+                </div>
+                <div class="hub-pill">Personal data</div>
+            </div>
+
+            <div class="row g-3 mt-3">
+                <div class="col-md-4">
+                    <div class="hub-card">
+                        <div class="hub-stat-label">Workout streak</div>
+                        <div class="hub-stat-value accent">{{ workoutStreak }} day{{ workoutStreak == 1 ? '' : 's' }}</div>
+                        <div class="hub-progress">
+                            <div class="hub-progress-bar" style="width: {{ workoutStreak > 7 ? 100 : workoutStreak * 14 }}%"></div>
+                        </div>
+                        <p class="text-muted">Logged {{ totalWorkouts }} workout{{ totalWorkouts == 1 ? '' : 's' }} so far.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="hub-card">
+                        <div class="hub-stat-label">Latest workout</div>
+                        <div class="hub-stat-value accent">{{ latestWorkoutLabel }}</div>
+                        <p class="text-muted">{{ latestWorkoutBadge }}</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="hub-card">
+                        <div class="hub-stat-label">Active programs</div>
+                        <div class="hub-stat-value accent">{{ programCount }}</div>
+                        <p class="text-muted">{{ programCount > 0 ? 'Programs available to follow.' : 'Create or join a program to get started.' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-3">
+                <div class="col-md-6">
+                    <div class="hub-card">
+                        <h3>Body weight</h3>
+                        <div class="hub-stat-value accent">{{ latestWeight }}</div>
+                        <p class="text-muted">{{ weightHint }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="hub-card">
+                        <h3>Average session</h3>
+                        <div class="hub-stat-value accent">{{ averageSessionMinutes }} min</div>
+                        <p class="text-muted">Average workout duration based on your recorded sessions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-3">
+                <div class="col-md-6">
+                    <div class="hub-card">
+                        <h3>Recommended supplements</h3>
+                        {% for item in recommendedSupplements %}
+                            <div class="supplement-item">
+                                <div>
+                                    <div class="supplement-title">{{ item.name }}</div>
+                                    <div class="supplement-desc">{{ item.benefit }}</div>
+                                </div>
+                                <span class="badge-pill">{{ item.tag }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="hub-card">
+                        <h3>Watch list</h3>
+                        <div class="hub-stat-list">
+                            <div class="hub-stat">
+                                <span class="hub-stat-label">Workout consistency</span>
+                                <span class="hub-stat-value">{{ workoutStreak > 0 ? 'On track' : 'Start now' }}</span>
+                            </div>
+                            <div class="hub-stat">
+                                <span class="hub-stat-label">Programs active</span>
+                                <span class="hub-stat-value">{{ programCount }}</span>
+                            </div>
+                            <div class="hub-stat">
+                                <span class="hub-stat-label">Weight log</span>
+                                <span class="hub-stat-value">{{ latestWeight != 'No weight recorded' ? 'Up to date' : 'Add entry' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="hub-card">
+            <div class="panel-card-title"><i class="bi bi-newspaper"></i> Latest articles</div>
+            {% for article in latestArticles %}
+                <div class="article-item">
+                    <div>
+                        <div class="article-title">{{ article.title }}</div>
+                        <div class="article-desc">{{ article.summary }}</div>
+                    </div>
+                    <div class="text-end">
+                        <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer" class="badge-pill">Read</a>
+                    </div>
+                </div>
+            {% endfor %}
+            <a href="/EcomProject/public/analytics" class="btn-gainz mt-3">See more insights</a>
+        </div>
+
+        <div class="hub-card mt-4">
+            <div class="panel-card-title"><i class="bi bi-lightning-charge-fill"></i> Action checklist</div>
+            <div class="quick-card">
+                <div class="quick-card-title">Complete today</div>
+                <div class="quick-card-value">{{ totalWorkouts > 0 ? 'Keep going' : 'Start logging' }}</div>
+                <div class="quick-card-note">Log a workout or a body weight entry to power the dashboard.</div>
+            </div>
+            <div class="quick-card">
+                <div class="quick-card-title">Weekly focus</div>
+                <div class="quick-card-value">{{ programCount > 0 ? 'Stay consistent' : 'Pick a program' }}</div>
+                <div class="quick-card-note">Follow your training plan and update progress daily.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
     <div class="col-sm-6 col-lg-3">
         <div class="dash-card">
             <i class="bi bi-activity dash-card-icon"></i>
             <h6 class="dash-card-title">Workout Sessions</h6>
-            <p class="dash-card-desc">Log and track your sessions</p>
-            <a href="/EcomProject/public/workouts" class="dash-card-btn">
-                Enter <i class="bi bi-arrow-right"></i>
-            </a>
+            <p class="dash-card-desc">Jump into your next training block.</p>
+            <a href="/EcomProject/public/workouts" class="dash-card-btn">Enter <i class="bi bi-arrow-right"></i></a>
         </div>
     </div>
     <div class="col-sm-6 col-lg-3">
         <div class="dash-card">
             <i class="bi bi-journal-text dash-card-icon"></i>
             <h6 class="dash-card-title">Training Programs</h6>
-            <p class="dash-card-desc">Browse and manage programs</p>
-            <a href="/EcomProject/public/programs" class="dash-card-btn">
-                Enter <i class="bi bi-arrow-right"></i>
-            </a>
+            <p class="dash-card-desc">Keep your schedule in sync with progress.</p>
+            <a href="/EcomProject/public/programs" class="dash-card-btn">Enter <i class="bi bi-arrow-right"></i></a>
         </div>
     </div>
     <div class="col-sm-6 col-lg-3">
         <div class="dash-card">
             <i class="bi bi-graph-up dash-card-icon"></i>
             <h6 class="dash-card-title">Analytics</h6>
-            <p class="dash-card-desc">View your progress over time</p>
-            <a href="/EcomProject/public/analytics" class="dash-card-btn">
-                Enter <i class="bi bi-arrow-right"></i>
-            </a>
+            <p class="dash-card-desc">Review gains, volume, and recovery trends.</p>
+            <a href="/EcomProject/public/analytics" class="dash-card-btn">Enter <i class="bi bi-arrow-right"></i></a>
         </div>
     </div>
     <div class="col-sm-6 col-lg-3">
         <div class="dash-card">
             <i class="bi bi-speedometer2 dash-card-icon"></i>
             <h6 class="dash-card-title">Body Weight</h6>
-            <p class="dash-card-desc">Track your weight over time</p>
-            <a href="/EcomProject/public/body-weight" class="dash-card-btn">
-                Enter <i class="bi bi-arrow-right"></i>
-            </a>
+            <p class="dash-card-desc">Update your weight and monitor changes.</p>
+            <a href="/EcomProject/public/body-weight" class="dash-card-btn">Enter <i class="bi bi-arrow-right"></i></a>
         </div>
     </div>
 </div>

@@ -117,22 +117,13 @@
                     {% endif %}
 
                     <p style="text-align: center; color: #999; margin: 20px 0; font-size: 14px;">
-                        Enter your 6-digit verification code
+                        Enter your 6-digit verification code. A message has been delivered to <strong>{{ email }}</strong> through your SMTP test app.
                     </p>
-
-                    {% if session['2fa_code'] is defined %}
-                        <div style="background: rgba(200, 255, 0, 0.15); border: 2px dashed #c8ff00; padding: 15px; margin: 20px 0; border-radius: 6px; text-align: center;">
-                            <p style="color: #c8ff00; font-size: 12px; margin: 0 0 8px 0; font-weight: 800;">🔑 DEV MODE - Your Code:</p>
-                            <p style="color: #c8ff00; font-size: 28px; font-weight: 800; margin: 0; letter-spacing: 4px; font-family: monospace;">{{ session['2fa_code'] }}</p>
-                        </div>
-                    {% endif %}
 
                     <form id="verifyForm" class="auth-form" method="POST" action="/EcomProject/public/verify-2fa" style="margin-top: 30px;">
                         <div style="text-align: center;">
                             <input type="text" id="codeInput" name="code" class="verify-code-input" placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="off">
                         </div>
-
-                        <input type="hidden" id="fullCode" value="">
 
                         {% if attempts_remaining > 0 and attempts_remaining <= 2 %}
                             <div class="attempts-warning">

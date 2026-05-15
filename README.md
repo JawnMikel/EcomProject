@@ -42,6 +42,13 @@ GAINZ is a web-based fitness tracking application designed to help users plan, r
    - Frontend: http://localhost:8000
    - Demo login: demo@gainz.com / password123
 
+6. **Verify your login with the 2FA code**:
+   - After logging in, you will be redirected to the verification page.
+   - Open your local SMTP test app (for example `smtp4dev` on `http://127.0.0.1:3000`).
+   - Find the newest message in the inbox and copy the 6-digit code from the email.
+   - Enter the code on the verification page and submit to complete login.
+   - If you are setting up the project manually, copy `.env.example` to `.env` and keep the local SMTP settings as shown for `smtp4dev`.
+
 ## 📱 Frontend Features
 
 ✅ **Modern UI**: Bootstrap-based responsive design
@@ -93,6 +100,15 @@ copy .env.example .env
 
 # Edit .env with your database credentials
 # Required: DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, JWT_SECRET
+```
+
+For local email testing with smtp4dev, keep the SMTP settings from `.env.example`:
+```env
+EMAIL_SMTP_HOST=127.0.0.1
+EMAIL_SMTP_PORT=25
+EMAIL_SMTP_USER=
+EMAIL_SMTP_PASS=
+EMAIL_SMTP_ENCRYPTION=
 ```
 
 ### 3. Setup Database

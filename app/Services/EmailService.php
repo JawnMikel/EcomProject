@@ -21,11 +21,11 @@ class EmailService
     {
         $this->fromEmail = $_ENV['EMAIL_FROM'] ?? 'noreply@gainz-app.local';
         $this->fromName = $_ENV['EMAIL_FROM_NAME'] ?? 'GAINZ System';
-        $this->smtpHost = $_ENV['EMAIL_SMTP_HOST'] ?? 'smtp.mailtrap.io';
-        $this->smtpPort = (int) ($_ENV['EMAIL_SMTP_PORT'] ?? 2525);
+        $this->smtpHost = $_ENV['EMAIL_SMTP_HOST'] ?? '127.0.0.1';
+        $this->smtpPort = (int) ($_ENV['EMAIL_SMTP_PORT'] ?? 25);
         $this->smtpUser = $_ENV['EMAIL_SMTP_USER'] ?? '';
         $this->smtpPass = $_ENV['EMAIL_SMTP_PASS'] ?? '';
-        $this->encryption = $_ENV['EMAIL_SMTP_ENCRYPTION'] ?? 'tls';
+        $this->encryption = $_ENV['EMAIL_SMTP_ENCRYPTION'] ?? '';
     }
 
     /**
@@ -51,10 +51,21 @@ class EmailService
             $mail->isSMTP();
             $mail->Host = $this->smtpHost;
             $mail->Port = $this->smtpPort;
-            $mail->SMTPAuth = true;
-            $mail->Username = $this->smtpUser;
-            $mail->Password = $this->smtpPass;
-            $mail->SMTPSecure = ($this->encryption === 'ssl') ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->SMTPAuth = !empty($this->smtpUser) && !empty($this->smtpPass);
+            if ($mail->SMTPAuth) {
+                $mail->Username = $this->smtpUser;
+                $mail->Password = $this->smtpPass;
+            }
+
+            if ($this->encryption === 'ssl') {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                $mail->SMTPAutoTLS = false;
+            } elseif ($this->encryption === 'tls') {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            } else {
+                $mail->SMTPSecure = false;
+                $mail->SMTPAutoTLS = false;
+            }
 
             // Set timeout
             $mail->Timeout = 10;
