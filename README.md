@@ -1,210 +1,94 @@
 # GAINZ - Fitness Tracking Application
 
-GAINZ is a web-based fitness tracking application designed to help users plan, record, and analyze their workouts.
+GAINZ is a web-based fitness tracking application built with PHP/Slim that helps users plan, record, and analyze their workouts.
 
-## 🚀 Quick Setup (Windows)
+## Quick Setup (XAMPP)
 
 ### Prerequisites
-- **PHP 7.4+ or 8.0+**: Download from [windows.php.net](https://windows.php.net/download/)
-- **MySQL/MariaDB 5.7+**: Download from [mysql.com](https://dev.mysql.com/downloads/mysql/) or [mariadb.org](https://mariadb.org/download/)
+- **PHP 8.1+** with MySQL extension
+- **MySQL/MariaDB** (via XAMPP)
 - **Web Browser**: Chrome, Firefox, or Edge
 
-### Automated Setup
-1. **Run the setup script**:
-   ```bash
-   setup.bat
-   ```
-   This will install Composer and PHP dependencies automatically.
-
-2. **Configure Database**:
-   - Open `.env` file
-   - Set your database credentials:
+### Setup
+1. **Configure `.env`** file:
    ```env
    DB_HOST=localhost
    DB_NAME=gainz
    DB_USER=root
-   DB_PASSWORD=your_password
+   DB_PASSWORD=
    JWT_SECRET=your_super_secret_jwt_key_here
    ```
 
-3. **Create Database**:
-   ```bash
-   mysql -u root -p < db/schema.sql
-   mysql -u root -p < db/sample_data.sql
-   ```
+2. **Create Database** in phpMyAdmin:
+   - Create database named `gainz`
+   - Import `database/schema.sql`
 
-4. **Start the Application**:
-   ```bash
-   composer start
-   ```
+3. **Start Server**:
+   - Start Apache in XAMPP
+   - Access at: http://localhost/EcomProject/public
 
-5. **Open in Browser**:
-   - Frontend: http://localhost:8000
-   - Demo login: demo@gainz.com / password123
+## Features
 
-6. **Verify your login with the 2FA code**:
-   - After logging in, you will be redirected to the verification page.
-   - Open your local SMTP test app (for example `smtp4dev` on `http://127.0.0.1:3000`).
-   - Find the newest message in the inbox and copy the 6-digit code from the email.
-   - Enter the code on the verification page and submit to complete login.
-   - If you are setting up the project manually, copy `.env.example` to `.env` and keep the local SMTP settings as shown for `smtp4dev`.
-
-## 📱 Frontend Features
-
-✅ **Modern UI**: Bootstrap-based responsive design
-✅ **User Authentication**: Register/login with secure JWT tokens
-✅ **Exercise Library**: Browse 10+ sample exercises with categories
-✅ **Workout Creation**: Build custom workouts with multiple exercises
-✅ **Progress Tracking**: View workout history and analytics
-✅ **Mobile Friendly**: Works perfectly on phones and tablets
-
-## 🔧 Manual Setup (Alternative)
-
-If automated setup doesn't work:
-
-1. **Install PHP** and add to PATH
-2. **Install Composer**: https://getcomposer.org/download/
-3. **Run**: `composer install`
-4. **Configure**: Copy `.env.example` to `.env` and edit
-5. **Database**: Create MySQL database and run SQL files
-6. **Start**: `composer start`
+- **Dashboard** - View workout stats, progress, and recent activity
+- **Workouts** - Start and track workout sessions with exercises/sets/reps
+- **Programs** - Create and manage training routines
+- **Body Weight** - Track weight over time
+- **Calendar** - View workout schedule
+- **Analytics** - Review training trends and progress
+- **Profile** - Manage account and fitness info
+- **2FA** - Two-factor authentication via email
 
 ## Project Structure
 
 ```
-├── public/              # Web entry point
-│   └── index.php       # Main application entry point
-├── src/
-│   ├── Controllers/    # Request handlers
-│   ├── Models/         # Data models
-│   └── Middleware/     # Custom middleware
-├── db/                 # Database files
-│   └── schema.sql      # Database schema
-├── config/             # Configuration files
-├── routes.php          # Application routes
-├── composer.json       # PHP dependencies
-└── .env               # Environment configuration
-```
-
-## Quick Start
-
-### 1. Install Dependencies
-```bash
-composer install
-```
-
-### 2. Setup Environment
-```bash
-# Copy environment file
-copy .env.example .env
-
-# Edit .env with your database credentials
-# Required: DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, JWT_SECRET
-```
-
-For local email testing with smtp4dev, keep the SMTP settings from `.env.example`:
-```env
-EMAIL_SMTP_HOST=127.0.0.1
-EMAIL_SMTP_PORT=25
-EMAIL_SMTP_USER=
-EMAIL_SMTP_PASS=
-EMAIL_SMTP_ENCRYPTION=
-```
-
-### 3. Setup Database
-```bash
-# Create database
-mysql -u root -p < db/schema.sql
-
-# Add sample data (optional)
-mysql -u root -p < db/sample_data.sql
-```
-
-### 4. Start the Application
-```bash
-# Start development server
-composer start
-
-# Application will be available at:
-# Frontend: http://localhost:8000
-# API: http://localhost:8000/api/
-```
-
-### 5. Demo Account
-- **Email**: demo@gainz.com
-- **Password**: password123
-
-## Frontend Features
-
-✅ **Responsive Design**: Works on desktop and mobile
-✅ **User Authentication**: Register/login with JWT tokens
-✅ **Exercise Library**: Browse exercises with categories and difficulty
-✅ **Workout Logging**: Create and track workouts with sets/reps
-✅ **Real-time Updates**: Dynamic content loading
-✅ **Bootstrap UI**: Modern, clean interface
-
-## API Endpoints
-
-### Authentication
-- `POST /register` - Create new user account
-- `POST /login` - Login and get JWT token
-- `POST /logout` - Logout user
-
-### Workouts
-- `GET /workouts` - List user's workouts
-- `POST /workouts` - Create new workout
-- `GET /workouts/{id}` - Get workout details
-
-### Exercises
-- `GET /exercises` - List all exercises
-- `GET /exercises/{id}` - Get exercise details
-
-### Admin (requires admin role)
-- `POST /admin/exercises` - Create exercise
-- `POST /admin/programs` - Create training program
-
-## Development
-
-### Running Tests
-```bash
-composer test
-```
-
-### Code Linting
-```bash
-composer lint
+├── app/
+│   ├── Controllers/    # Request handlers (Auth, Dashboard, Workout, etc.)
+│   ├── Models/        # Database models (User, Workout, Exercise, etc.)
+│   ├── Middleware/    # Auth middleware
+│   ├── Services/      # Email, 2FA services
+│   └── Views/         # Twig templates
+├── public/
+│   ├── css/           # gainz-theme.css
+│   ├── js/            # JavaScript files
+│   ├── locales/       # i18n (en.json, fr.json)
+│   └── index.php      # Entry point
+├── config/
+│   ├── routes.php     # Application routes
+│   ├── container.php  # DI container
+│   └── settings.php   # App settings
+├── database/
+│   ├── schema.sql     # Database schema
+│   └── add_2fa.sql    # 2FA migration
+└── vendor/            # PHP dependencies
 ```
 
 ## Tech Stack
 
-- **Framework**: Slim 4 (PHP microframework)
-- **Authentication**: JWT (Firebase JWT)
-- **Database**: MySQL/MariaDB
-- **Validation**: Respect/Validation
-- **Environment**: PHP dotenv
+- **Framework**: Slim 4 (PHP)
+- **Templating**: Twig
+- **Database**: MySQL/MariaDB (PDO)
+- **Auth**: Session-based with 2FA
+- **CSS**: Custom dark theme (GAINZ aesthetic)
+- **i18n**: English & French support
 
 ## Configuration
 
-All configuration is managed through the `.env` file:
-- `APP_ENV` - Application environment (development/production)
-- `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` - Database connection
-- `JWT_SECRET` - Secret key for JWT tokens
-- `MIN_USER_AGE` - Minimum age for registration (default: 16)
-- `SUPPORTED_LANGUAGES` - Comma-separated list of supported languages
+Edit `.env`:
+- `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` - Database
+- `JWT_SECRET` - Session secret
+- `MIN_USER_AGE` - Minimum registration age (default: 16)
+- `EMAIL_*` - SMTP settings for 2FA codes
 
-## Roadmap
+## Development
 
-- [ ] Complete database integration
-- [ ] Implement user authentication with 2FA
-- [ ] Build frontend UI (React/Vue)
-- [ ] Add workout analytics dashboard
-- [ ] Mobile app support
-- [ ] Social features (optional)
+```bash
+# Install dependencies
+composer install
+
+# Start dev server (optional)
+php -S localhost:8000 -t public
+```
 
 ## License
 
-MIT License - See LICENSE file for details
-
-## Support
-
-For issues, feature requests, or contributions, please open an issue on GitHub.
+MIT License
