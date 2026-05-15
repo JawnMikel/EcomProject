@@ -956,6 +956,8 @@ function playBeep() {
 
 let mainTimerInterval = null;
 let mainTimerRunning = true;
+let totalPausedTime = 0;
+let pauseStartTime = null;
 let customTimerRunning = false;
 let customTimerInterval = null;
 const workoutStartTime = new Date('{{ session.start_time }}');
@@ -963,7 +965,7 @@ const workoutStartTime = new Date('{{ session.start_time }}');
 function updateMainTimer() {
     const timerDisplay = document.getElementById('mainTimer');
     const now = new Date();
-    const diff = now - workoutStartTime;
+    const diff = now - workoutStartTime - totalPausedTime;
     const hours = Math.floor(diff / 3600000);
     const minutes = Math.floor((diff % 3600000) / 60000);
     const seconds = Math.floor((diff % 60000) / 1000);
@@ -983,9 +985,14 @@ function toggleTimer() {
             mainTimerInterval = null;
         }
         mainTimerRunning = false;
+        pauseStartTime = Date.now();
         icon.className = 'bi bi-play-fill';
         btn.style.background = '#22c55e';
     } else {
+        if (pauseStartTime) {
+            totalPausedTime += Date.now() - pauseStartTime;
+            pauseStartTime = null;
+        }
         mainTimerRunning = true;
         icon.className = 'bi bi-pause-fill';
         btn.style.background = 'var(--accent)';

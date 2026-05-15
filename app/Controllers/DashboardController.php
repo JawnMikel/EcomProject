@@ -26,6 +26,12 @@ class DashboardController
             return $response->withHeader('Location', '/EcomProject/public/login')->withStatus(302);
         }
 
+        // Sync start_time from database if there's an active workout
+        $activeSession = $this->workoutSessionModel->getActiveSession((int) $_SESSION['user_id']);
+        if ($activeSession && isset($activeSession['start_time']) && empty($_SESSION['start_time'])) {
+            $_SESSION['start_time'] = $activeSession['start_time'];
+        }
+
         $userId = (int) $_SESSION['user_id'];
         $workoutStats = $this->workoutSessionModel->getStatsForUser($userId);
         $recentWorkouts = $this->workoutSessionModel->getRecentByUser($userId);

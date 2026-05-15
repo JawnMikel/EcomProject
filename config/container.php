@@ -52,6 +52,15 @@ return function (ContainerBuilder $builder) {
             );
         },
 
+        App\Controllers\ProgramController::class => function (ContainerInterface $c) {
+            return new App\Controllers\ProgramController(
+                $c->get(Twig::class),
+                $c->get(App\Models\TrainingProgramModel::class),
+                $c->get(App\Models\ExerciseModel::class),
+                $c->get(App\Models\WorkoutSessionModel::class)
+            );
+        },
+
         TwoFactorService::class => fn(ContainerInterface $c) => new TwoFactorService($c->get(PDO::class)),
         App\Models\UserModel::class => fn(ContainerInterface $c) => new App\Models\UserModel($c->get(PDO::class)),
 
