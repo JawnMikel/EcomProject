@@ -1,0 +1,109 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "workouts": "Workouts",
+    "programs": "Programs",
+    "analytics": "Analytics",
+    "calendar": "Calendar",
+    "body_weight": "Body Weight",
+    "exercises": "Exercises",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "welcome_back": "Welcome back, {{username}}",
+    "performance_data": "Your performance data from workouts, body weight, and active programs.",
+    "stats": {
+      "workout_streak": "Workout streak",
+      "days": "day",
+      "days_plural": "days",
+      "workouts_logged": "workout logged",
+      "workouts_logged_plural": "workouts logged",
+      "latest_workout": "Latest workout",
+      "body_weight": "Body weight",
+      "no_weight_recorded": "No weight recorded",
+      "avg_session": "Avg session",
+      "min": "min",
+      "active_program": "active program",
+      "active_programs": "active programs"
+    },
+    "progress_checklist": {
+      "title": "Progress checklist",
+      "workout_consistency": "Workout consistency",
+      "on_track": "On track",
+      "start_now": "Start now",
+      "programs_active": "Programs active",
+      "weight_log": "Weight log",
+      "up_to_date": "Up to date",
+      "add_entry": "Add entry"
+    },
+    "recommended_supplements": {
+      "title": "Recommended supplements"
+    },
+    "latest_articles": {
+      "title": "Latest articles",
+      "read": "Read",
+      "see_more_insights": "See more insights"
+    },
+    "todays_focus": {
+      "title": "Today's focus",
+      "complete_today": "Complete today",
+      "keep_going": "Keep going",
+      "start_logging": "Start logging",
+      "log_workout_note": "Log a workout or weight to power your dashboard",
+      "weekly_goal": "Weekly goal",
+      "stay_consistent": "Stay consistent",
+      "pick_a_program": "Pick a program",
+      "follow_plan_note": "Follow your plan and update progress daily"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "LOGIN",
+      "email_or_username": "EMAIL OR USERNAME",
+      "email_placeholder": "Email or Username",
+      "password": "PASSWORD",
+      "password_placeholder": "••••••••••••",
+      "login_button": "LOGIN",
+      "new_recruit": "New Recruit? Create Account",
+      "reset_access": "Reset Access"
+    },
+    "register": {
+      "title": "REGISTER",
+      "username": "USERNAME",
+      "username_placeholder": "Choose a username",
+      "email": "EMAIL",
+      "email_placeholder": "your@email.com",
+      "password": "PASSWORD",
+      "confirm_password": "CONFIRM PASSWORD",
+      "register_button": "REGISTER",
+      "already_have_account": "Already have an account? Login"
+    },
+    "verify_2fa": {
+      "title": "VERIFY 2FA",
+      "enter_code": "ENTER VERIFICATION CODE",
+      "code_placeholder": "Enter 6-digit code",
+      "verify_button": "VERIFY",
+      "back_to_login": "Back to Login"
+    }
+  },
+  "footer": {
+    "brand": "GAINZ Industrial Athletics. No Weakness.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "support": "Support",
+    "api": "API",
+    "copyright": "© 2025 GAINZ Industrial Athletics."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close"
+  }
+}

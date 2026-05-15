@@ -1,0 +1,109 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "workouts": "Entraînements",
+    "programs": "Programmes",
+    "analytics": "Analyses",
+    "calendar": "Calendrier",
+    "body_weight": "Poids corporel",
+    "exercises": "Exercices",
+    "profile": "Profil",
+    "logout": "Déconnexion"
+  },
+  "dashboard": {
+    "welcome_back": "Bienvenue, {{username}}",
+    "performance_data": "Vos données de performance des entraînements, poids corporel et programmes actifs.",
+    "stats": {
+      "workout_streak": "Série d'entraînements",
+      "days": "jour",
+      "days_plural": "jours",
+      "workouts_logged": "entraînement enregistré",
+      "workouts_logged_plural": "entraînements enregistrés",
+      "latest_workout": "Dernier entraînement",
+      "body_weight": "Poids corporel",
+      "no_weight_recorded": "Aucun poids enregistré",
+      "avg_session": "Session moy.",
+      "min": "min",
+      "active_program": "programme actif",
+      "active_programs": "programmes actifs"
+    },
+    "progress_checklist": {
+      "title": "Liste de progression",
+      "workout_consistency": "Cohérence des entraînements",
+      "on_track": "Sur la bonne voie",
+      "start_now": "Commencer maintenant",
+      "programs_active": "Programmes actifs",
+      "weight_log": "Journal de poids",
+      "up_to_date": "À jour",
+      "add_entry": "Ajouter une entrée"
+    },
+    "recommended_supplements": {
+      "title": "Suppléments recommandés"
+    },
+    "latest_articles": {
+      "title": "Derniers articles",
+      "read": "Lire",
+      "see_more_insights": "Voir plus d'analyses"
+    },
+    "todays_focus": {
+      "title": "Focus d'aujourd'hui",
+      "complete_today": "Compléter aujourd'hui",
+      "keep_going": "Continuer",
+      "start_logging": "Commencer l'enregistrement",
+      "log_workout_note": "Enregistrez un entraînement ou un poids pour alimenter votre tableau de bord",
+      "weekly_goal": "Objectif hebdomadaire",
+      "stay_consistent": "Rester cohérent",
+      "pick_a_program": "Choisir un programme",
+      "follow_plan_note": "Suivez votre plan et mettez à jour vos progrès quotidiennement"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "CONNEXION",
+      "email_or_username": "EMAIL OU NOM D'UTILISATEUR",
+      "email_placeholder": "Email ou nom d'utilisateur",
+      "password": "MOT DE PASSE",
+      "password_placeholder": "••••••••••••",
+      "login_button": "SE CONNECTER",
+      "new_recruit": "Nouveau Recrue? Créer un compte",
+      "reset_access": "Réinitialiser l'accès"
+    },
+    "register": {
+      "title": "INSCRIPTION",
+      "username": "NOM D'UTILISATEUR",
+      "username_placeholder": "Choisissez un nom d'utilisateur",
+      "email": "EMAIL",
+      "email_placeholder": "votre@email.com",
+      "password": "MOT DE PASSE",
+      "confirm_password": "CONFIRMER LE MOT DE PASSE",
+      "register_button": "S'INSCRIRE",
+      "already_have_account": "Vous avez déjà un compte? Se connecter"
+    },
+    "verify_2fa": {
+      "title": "VÉRIFIER 2FA",
+      "enter_code": "ENTRER LE CODE DE VÉRIFICATION",
+      "code_placeholder": "Entrez le code à 6 chiffres",
+      "verify_button": "VÉRIFIER",
+      "back_to_login": "Retour à la connexion"
+    }
+  },
+  "footer": {
+    "brand": "GAINZ Athlétisme Industriel. Aucune Faiblesse.",
+    "terms": "Conditions d'utilisation",
+    "privacy": "Politique de confidentialité",
+    "support": "Support",
+    "api": "API",
+    "copyright": "© 2025 GAINZ Athlétisme Industriel."
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "close": "Fermer"
+  }
+}
